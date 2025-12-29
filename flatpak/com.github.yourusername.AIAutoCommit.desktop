@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=AI Auto Commit
+GenericName=AI Git Commit Tool
+Comment=AI-powered git commit and push tool with interactive setup
+Exec=autocommit
+Icon=com.github.yourusername.AIAutoCommit
+Terminal=true
+Type=Application
+Categories=Development;Utility;
+Keywords=git;commit;ai;automation;development;

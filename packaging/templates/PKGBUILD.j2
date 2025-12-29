@@ -1,0 +1,43 @@
+# Maintainer: {{ metadata.publisher }} <{{ metadata.publisher_email }}>
+pkgname=ai-auto-commit
+pkgver={{ metadata.version }}
+pkgrel=1
+pkgdesc="{{ metadata.description }}"
+arch=('any')
+url="{{ metadata.homepage }}"
+license=('{{ metadata.license }}')
+depends=('python' 'python-pip' 'git')
+makedepends=('python-build' 'python-installer' 'python-wheel' 'python-setuptools')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/{{ metadata.github_username }}/{{ metadata.github_repo }}/archive/v$pkgver.tar.gz")
+sha256sums=('{{ metadata.checksums.sha256 or "SKIP" }}')
+
+build() {
+    cd "$srcdir/$pkgname-$pkgver"
+    python -m build --wheel --no-isolation
+}
+
+package() {
+    cd "$srcdir/$pkgname-$pkgver"
+    python -m installer --destdir="$pkgdir" dist/*.whl
+
+    # Install license
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+    # Install README
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}
+
+post_install() {
+    echo ""
+    echo "==================================================================="
+    echo "  AI Auto Commit has been installed!"
+    echo "==================================================================="
+    echo ""
+{{ metadata.post_install_message | indent(4) }}
+    echo "==================================================================="
+    echo ""
+}
+
+post_upgrade() {
+    post_install
+}

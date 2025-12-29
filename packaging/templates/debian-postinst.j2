@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        echo ""
+        echo "═══════════════════════════════════════════════════════════════"
+        echo "  AI Auto Commit has been installed!"
+        echo "═══════════════════════════════════════════════════════════════"
+        echo ""
+{{ metadata.post_install_message.splitlines() | map('regex_replace', '^(.*)$', '        echo "\\1"') | join('\n') }}
+        echo "═══════════════════════════════════════════════════════════════"
+        echo ""
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

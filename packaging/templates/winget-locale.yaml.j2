@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+
+PackageIdentifier: {{ metadata.publisher }}.AIAutoCommit
+PackageVersion: {{ metadata.version }}
+PackageLocale: en-US
+Publisher: {{ metadata.publisher }}
+PublisherUrl: {{ metadata.homepage }}
+PublisherSupportUrl: {{ metadata.issues }}
+PackageName: AI Auto Commit
+PackageUrl: {{ metadata.homepage }}
+License: {{ metadata.license }}
+LicenseUrl: {{ metadata.homepage }}/blob/main/LICENSE
+ShortDescription: {{ metadata.short_description or metadata.description }}
+Description: |-
+{{ metadata.long_description.splitlines() | map('regex_replace', '^(.*)$', '  \\1') | join('\n') }}
+
+  Features:
+{% for feature in metadata.features %}
+  - {{ feature }}
+{% endfor %}
+Tags:
+{% for keyword in metadata.keywords %}
+  - {{ keyword }}
+{% endfor %}
+Moniker: autocommit
+{% if metadata.get("release-notes") and metadata["release-notes"].get("notes") %}
+ReleaseNotes: |-
+{{ metadata["release-notes"].notes.splitlines() | map('regex_replace', '^(.*)$', '  \\1') | join('\n') }}
+{% endif %}
+ReleaseNotesUrl: {{ metadata.homepage }}/releases/tag/v{{ metadata.version }}
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

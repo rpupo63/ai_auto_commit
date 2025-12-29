@@ -1,0 +1,95 @@
+# Quick install script for ai-auto-commit on Windows
+# Supports winget, Chocolatey, Scoop, and pip
+
+$ErrorActionPreference = 'Stop'
+
+Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "  AI Auto Commit - Installation Script" -ForegroundColor Cyan
+Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host ""
+
+# Function to install via pip
+function Install-ViaPip {
+    Write-Host "Installing via pip..." -ForegroundColor Yellow
+    try {
+        & python -m pip install --user ai-auto-commit
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Installation successful!" -ForegroundColor Green
+            return $true
+        }
+    }
+    catch {
+        Write-Error "Failed to install via pip: $_"
+        return $false
+    }
+}
+
+# Check for winget (Windows Package Manager)
+if (Get-Command winget -ErrorAction SilentlyContinue) {
+    Write-Host "winget detected. Installing via winget..." -ForegroundColor Yellow
+    try {
+        winget install {{ metadata.publisher }}.AIAutoCommit
+        if ($LASTEXITCODE -eq 0) {
+            $installed = $true
+        }
+    }
+    catch {
+        Write-Warning "winget installation failed. Trying other methods..."
+        $installed = $false
+    }
+}
+# Check for Chocolatey
+elseif (Get-Command choco -ErrorAction SilentlyContinue) {
+    Write-Host "Chocolatey detected. Installing via choco..." -ForegroundColor Yellow
+    try {
+        choco install ai-auto-commit -y
+        if ($LASTEXITCODE -eq 0) {
+            $installed = $true
+        }
+    }
+    catch {
+        Write-Warning "Chocolatey installation failed. Trying pip..."
+        $installed = Install-ViaPip
+    }
+}
+# Check for Scoop
+elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+    Write-Host "Scoop detected. Installing via scoop..." -ForegroundColor Yellow
+    try {
+        scoop bucket add extras
+        scoop install ai-auto-commit
+        if ($LASTEXITCODE -eq 0) {
+            $installed = $true
+        }
+    }
+    catch {
+        Write-Warning "Scoop installation failed. Trying pip..."
+        $installed = Install-ViaPip
+    }
+}
+# Fall back to pip
+else {
+    Write-Host "No package manager detected. Installing via pip..." -ForegroundColor Yellow
+    $installed = Install-ViaPip
+}
+
+if ($installed) {
+    Write-Host ""
+    Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Green
+    Write-Host "  Installation complete!" -ForegroundColor Green
+    Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Green
+    Write-Host ""
+{{ metadata.post_install_message.splitlines() | map('regex_replace', '^(.*)$', '    Write-Host "\\1" -ForegroundColor Yellow') | join('\n') }}
+    Write-Host ""
+
+    # Check if autocommit is in PATH
+    if (-not (Get-Command autocommit -ErrorAction SilentlyContinue)) {
+        Write-Host "Note: You may need to restart your terminal or add Python Scripts to PATH" -ForegroundColor Yellow
+        Write-Host ""
+    }
+}
+else {
+    Write-Error "Installation failed. Please try manual installation:"
+    Write-Host "  pip install ai-auto-commit" -ForegroundColor White
+    exit 1
+}

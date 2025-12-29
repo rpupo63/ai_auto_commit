@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_install:
+	dh_auto_install
+	# Remove any .pyc files
+	find debian/ai-auto-commit -name '*.pyc' -delete
+	find debian/ai-auto-commit -name '__pycache__' -type d -delete

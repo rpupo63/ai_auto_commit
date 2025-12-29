@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="console-application">
+  <id>com.github.{{ metadata.github_username }}.AIAutoCommit</id>
+  <metadata_license>{{ metadata.license }}</metadata_license>
+  <project_license>{{ metadata.license }}</project_license>
+  <name>AI Auto Commit</name>
+  <summary>{{ metadata.short_description or metadata.description }}</summary>
+
+  <description>
+    <p>
+{{ metadata.long_description.splitlines() | map('regex_replace', '^(.*)$', '      \\1') | join('\n') }}
+    </p>
+    <p>Features:</p>
+    <ul>
+{% for feature in metadata.features %}
+      <li>{{ feature }}</li>
+{% endfor %}
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">com.github.{{ metadata.github_username }}.AIAutoCommit.desktop</launchable>
+  <provides>
+    <binary>autocommit</binary>
+  </provides>
+
+  <url type="homepage">{{ metadata.homepage }}</url>
+  <url type="bugtracker">{{ metadata.issues }}</url>
+
+  <developer_name>{{ metadata.publisher }}</developer_name>
+
+  <releases>
+    <release version="{{ metadata.version }}" date="{{ metadata['release-notes'].date if metadata.get('release-notes') else '2025-12-27' }}">
+      <description>
+{% if metadata.get("release-notes") and metadata["release-notes"].get("notes") %}
+        <p>{{ metadata["release-notes"].notes.splitlines()[0] }}</p>
+        <ul>
+{% for line in metadata["release-notes"].notes.splitlines()[1:] %}
+{% if line.strip().startswith('-') %}
+          <li>{{ line.strip()[1:].strip() }}</li>
+{% endif %}
+{% endfor %}
+        </ul>
+{% else %}
+        <p>Release {{ metadata.version }}</p>
+{% endif %}
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+
+  <keywords>
+{% for keyword in metadata.keywords %}
+    <keyword>{{ keyword }}</keyword>
+{% endfor %}
+  </keywords>
+</component>

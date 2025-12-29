@@ -1,0 +1,29 @@
+Source: ai-auto-commit
+Section: {{ metadata.debian.section if metadata.get("debian") else "utils" }}
+Priority: {{ metadata.debian.priority if metadata.get("debian") else "optional" }}
+Maintainer: {{ metadata.publisher }} <{{ metadata.publisher_email }}>
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3-all,
+               python3-setuptools,
+               python3-pip
+Standards-Version: 4.6.0
+Homepage: {{ metadata.homepage }}
+Vcs-Browser: {{ metadata.repository }}
+Vcs-Git: {{ metadata.repository }}.git
+Rules-Requires-Root: no
+
+Package: ai-auto-commit
+Architecture: all
+Depends: ${python3:Depends},
+         ${misc:Depends},
+         python3 (>= 3.8),
+         python3-pip,
+         git
+Description: {{ metadata.description }}
+{{ metadata.long_description.splitlines() | map('regex_replace', '^(.*)$', ' \\1') | join('\n') }}
+ .
+ Features:
+{% for feature in metadata.features %}
+  * {{ feature.split(':')[0] }}
+{% endfor %}

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="console-application">
+  <id>com.github.yourusername.AIAutoCommit</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>AI Auto Commit</name>
+  <summary>AI-powered git commit and push tool with interactive setup</summary>
+
+  <description>
+    <p>
+      An intelligent, AI-powered git commit and push tool that automatically generates
+      meaningful commit messages from your staged changes. Works with multiple AI providers
+      including OpenAI, Anthropic, Google, Mistral, and Cohere.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>AI-Powered Commit Messages: Automatically generates conventional commit messages</li>
+      <li>Multi-Provider Support: Works with OpenAI, Anthropic, Google, Mistral, and Cohere</li>
+      <li>Token Budget Management: Configurable token limits to control API costs</li>
+      <li>Interactive Setup: User-friendly wizard for first-time configuration</li>
+      <li>Smart Diff Analysis: Uses hierarchical analysis to understand complex changes</li>
+      <li>Safety Features: Creates backups and verifies changes before committing</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">com.github.yourusername.AIAutoCommit.desktop</launchable>
+  <provides>
+    <binary>autocommit</binary>
+  </provides>
+
+  <url type="homepage">https://github.com/yourusername/ai_auto_commit</url>
+  <url type="bugtracker">https://github.com/yourusername/ai_auto_commit/issues</url>
+
+  <developer_name>Your Name</developer_name>
+
+  <releases>
+    <release version="0.1.0" date="2025-12-27">
+      <description>
+        <p>Initial release with interactive setup wizard and multi-provider support.</p>
+        <ul>
+          <li>Interactive setup wizard (autocommit init)</li>
+          <li>Support for 5 AI providers (OpenAI, Anthropic, Google, Mistral, Cohere)</li>
+          <li>Token budget management</li>
+          <li>Configuration stored in ~/.config/ai_auto_commit/config.json</li>
+          <li>Smart diff analysis</li>
+          <li>Safety features with backups</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+
+  <keywords>
+    <keyword>git</keyword>
+    <keyword>commit</keyword>
+    <keyword>ai</keyword>
+    <keyword>openai</keyword>
+    <keyword>anthropic</keyword>
+    <keyword>claude</keyword>
+    <keyword>gemini</keyword>
+    <keyword>automation</keyword>
+    <keyword>cli</keyword>
+    <keyword>developer-tools</keyword>
+  </keywords>
+</component>

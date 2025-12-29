@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>ai-auto-commit</id>
+    <version>0.1.0</version>
+    <title>AI Auto Commit</title>
+    <authors>AI Auto Commit Contributors</authors>
+    <owners>Your Name</owners>
+    <licenseUrl>https://github.com/yourusername/ai_auto_commit/blob/main/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/yourusername/ai_auto_commit</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>An intelligent, AI-powered git commit and push tool that automatically generates
+meaningful commit messages from your staged changes. Works with multiple AI providers
+including OpenAI, Anthropic, Google, Mistral, and Cohere.
+</description>
+    <summary>AI-powered git commit and push tool with interactive setup</summary>
+    <releaseNotes>Initial release with interactive setup wizard and multi-provider support.
+
+- Interactive setup wizard (autocommit init)
+- Support for 5 AI providers (OpenAI, Anthropic, Google, Mistral, Cohere)
+- Token budget management
+- Configuration stored in ~/.config/ai_auto_commit/config.json
+- Smart diff analysis
+- Safety features with backups
+</releaseNotes>
+    <copyright>2025 AI Auto Commit Contributors</copyright>
+    <tags>git commit ai openai anthropic claude gemini automation cli developer-tools</tags>
+    <dependencies>
+      <dependency id="python" version="3.8.0" />
+      <dependency id="git" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

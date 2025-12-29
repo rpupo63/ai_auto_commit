@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>ai-auto-commit</id>
+    <version>{{ metadata.version }}</version>
+    <title>AI Auto Commit</title>
+    <authors>AI Auto Commit Contributors</authors>
+    <owners>{{ metadata.publisher }}</owners>
+    <licenseUrl>{{ metadata.homepage }}/blob/main/LICENSE</licenseUrl>
+    <projectUrl>{{ metadata.homepage }}</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>{{ metadata.long_description or metadata.description }}</description>
+    <summary>{{ metadata.short_description or metadata.description }}</summary>
+    <releaseNotes>{{ metadata["release-notes"].notes if metadata.get("release-notes") else "See changelog for details" }}</releaseNotes>
+    <copyright>2025 AI Auto Commit Contributors</copyright>
+    <tags>{{ metadata.keywords | join(' ') }}</tags>
+    <dependencies>
+      <dependency id="python" version="3.8.0" />
+      <dependency id="git" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

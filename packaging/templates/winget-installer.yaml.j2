@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+
+PackageIdentifier: {{ metadata.publisher }}.AIAutoCommit
+PackageVersion: {{ metadata.version }}
+Platform:
+  - Windows.Desktop
+MinimumOSVersion: 10.0.0.0
+Scope: user
+InstallModes:
+  - interactive
+InstallerType: portable
+Commands:
+  - autocommit
+Dependencies:
+  PackageDependencies:
+    - PackageIdentifier: Python.Python.3.11
+      MinimumVersion: 3.8.0
+    - PackageIdentifier: Git.Git
+Installers:
+  - Architecture: x64
+    InstallerType: portable
+    InstallerUrl: https://github.com/{{ metadata.github_username }}/{{ metadata.github_repo }}/releases/download/v{{ metadata.version }}/install.ps1
+    InstallerSha256: {{ metadata.checksums.sha256 or 'REPLACE_WITH_ACTUAL_SHA256' }}
+    PortableCommandAlias: autocommit
+ManifestType: installer
+ManifestVersion: 1.6.0

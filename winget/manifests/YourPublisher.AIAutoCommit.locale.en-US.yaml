@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+
+PackageIdentifier: Your Name.AIAutoCommit
+PackageVersion: 0.1.0
+PackageLocale: en-US
+Publisher: Your Name
+PublisherUrl: https://github.com/yourusername/ai_auto_commit
+PublisherSupportUrl: https://github.com/yourusername/ai_auto_commit/issues
+PackageName: AI Auto Commit
+PackageUrl: https://github.com/yourusername/ai_auto_commit
+License: MIT
+LicenseUrl: https://github.com/yourusername/ai_auto_commit/blob/main/LICENSE
+ShortDescription: AI-powered git commit and push tool with interactive setup
+Description: |-
+  An intelligent, AI-powered git commit and push tool that automatically generates
+  meaningful commit messages from your staged changes. Works with multiple AI providers
+  including OpenAI, Anthropic, Google, Mistral, and Cohere.
+
+  Features:
+  - AI-Powered Commit Messages: Automatically generates conventional commit messages
+  - Multi-Provider Support: Works with OpenAI, Anthropic, Google, Mistral, and Cohere
+  - Token Budget Management: Configurable token limits to control API costs
+  - Interactive Setup: User-friendly wizard for first-time configuration
+  - Smart Diff Analysis: Uses hierarchical analysis to understand complex changes
+  - Safety Features: Creates backups and verifies changes before committing
+Tags:
+  - git
+  - commit
+  - ai
+  - openai
+  - anthropic
+  - claude
+  - gemini
+  - automation
+  - cli
+  - developer-tools
+Moniker: autocommit
+ReleaseNotes: |-
+  Initial release with interactive setup wizard and multi-provider support.
+  
+  - Interactive setup wizard (autocommit init)
+  - Support for 5 AI providers (OpenAI, Anthropic, Google, Mistral, Cohere)
+  - Token budget management
+  - Configuration stored in ~/.config/ai_auto_commit/config.json
+  - Smart diff analysis
+  - Safety features with backups
+ReleaseNotesUrl: https://github.com/yourusername/ai_auto_commit/releases/tag/v0.1.0
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

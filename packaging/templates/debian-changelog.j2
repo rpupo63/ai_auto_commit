@@ -1,0 +1,9 @@
+ai-auto-commit ({{ metadata.version }}-1) unstable; urgency=medium
+
+{% if metadata.get("release-notes") and metadata["release-notes"].get("notes") %}
+{{ metadata["release-notes"].notes.splitlines() | map('regex_replace', '^(.+)$', '  \\1') | join('\n') }}
+{% else %}
+  * Release {{ metadata.version }}
+{% endif %}
+
+ -- {{ metadata.publisher }} <{{ metadata.publisher_email }}>  {{ metadata["release-notes"].date if metadata.get("release-notes") else "Fri, 27 Dec 2024 12:00:00 +0000" }}

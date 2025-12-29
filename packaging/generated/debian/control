@@ -1,0 +1,34 @@
+Source: ai-auto-commit
+Section: utils
+Priority: optional
+Maintainer: Your Name <your.email@example.com>
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3-all,
+               python3-setuptools,
+               python3-pip
+Standards-Version: 4.6.0
+Homepage: https://github.com/yourusername/ai_auto_commit
+Vcs-Browser: https://github.com/yourusername/ai_auto_commit
+Vcs-Git: https://github.com/yourusername/ai_auto_commit.git
+Rules-Requires-Root: no
+
+Package: ai-auto-commit
+Architecture: all
+Depends: ${python3:Depends},
+         ${misc:Depends},
+         python3 (>= 3.8),
+         python3-pip,
+         git
+Description: AI-powered git commit and push tool with interactive setup
+ An intelligent, AI-powered git commit and push tool that automatically generates
+ meaningful commit messages from your staged changes. Works with multiple AI providers
+ including OpenAI, Anthropic, Google, Mistral, and Cohere.
+ .
+ Features:
+  * AI-Powered Commit Messages
+  * Multi-Provider Support
+  * Token Budget Management
+  * Interactive Setup
+  * Smart Diff Analysis
+  * Safety Features

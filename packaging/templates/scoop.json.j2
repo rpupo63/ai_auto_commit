@@ -1,0 +1,51 @@
+{
+    "version": "{{ metadata.version }}",
+    "description": "{{ metadata.description }}",
+    "homepage": "{{ metadata.homepage }}",
+    "license": "{{ metadata.license }}",
+    "depends": [
+        "python",
+        "git"
+    ],
+    "url": "https://files.pythonhosted.org/packages/source/a/ai-auto-commit/ai-auto-commit-{{ metadata.version }}.tar.gz",
+    "hash": "sha256:{{ metadata.checksums.sha256 or 'REPLACE_WITH_ACTUAL_SHA256' }}",
+    "extract_dir": "ai-auto-commit-{{ metadata.version }}",
+    "installer": {
+        "script": [
+            "Write-Host 'Installing ai-auto-commit via pip...' -ForegroundColor Cyan",
+            "python -m pip install --user \"$dir\\ai-auto-commit-$version.tar.gz\"",
+            "Write-Host ''",
+            "Write-Host '═══════════════════════════════════════════════════════════════' -ForegroundColor Green",
+            "Write-Host '  AI Auto Commit has been installed successfully!' -ForegroundColor Green",
+            "Write-Host '═══════════════════════════════════════════════════════════════' -ForegroundColor Green",
+            "Write-Host ''",
+            "Write-Host 'To get started, run the interactive setup wizard:' -ForegroundColor Yellow",
+            "Write-Host '  autocommit init' -ForegroundColor White",
+            "Write-Host ''",
+            "Write-Host 'For more information:' -ForegroundColor Yellow",
+            "Write-Host '  autocommit --help' -ForegroundColor White",
+            "Write-Host ''"
+        ]
+    },
+    "uninstaller": {
+        "script": [
+            "Write-Host 'Uninstalling ai-auto-commit...' -ForegroundColor Cyan",
+            "python -m pip uninstall -y ai-auto-commit"
+        ]
+    },
+    "checkver": {
+        "url": "https://pypi.org/pypi/ai-auto-commit/json",
+        "jsonpath": "$.info.version"
+    },
+    "autoupdate": {
+        "url": "https://files.pythonhosted.org/packages/source/a/ai-auto-commit/ai-auto-commit-$version.tar.gz",
+        "hash": {
+            "url": "https://pypi.org/pypi/ai-auto-commit/json",
+            "jsonpath": "$.urls[?(@.filename == 'ai-auto-commit-$version.tar.gz')].digests.sha256"
+        }
+    },
+    "notes": [
+        "Run 'autocommit init' to configure your AI provider API keys.",
+        "Configuration is stored in $env:USERPROFILE\\.config\\ai_auto_commit\\config.json"
+    ]
+}

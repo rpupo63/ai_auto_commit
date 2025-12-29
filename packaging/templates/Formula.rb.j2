@@ -1,0 +1,35 @@
+class AiAutoCommit < Formula
+  include Language::Python::Virtualenv
+
+  desc "{{ metadata.description }}"
+  homepage "{{ metadata.homepage }}"
+  url "https://files.pythonhosted.org/packages/source/a/ai-auto-commit/ai-auto-commit-{{ metadata.version }}.tar.gz"
+  sha256 "{{ metadata.checksums.sha256 or 'REPLACE_WITH_ACTUAL_SHA256' }}"
+  license "{{ metadata.license }}"
+
+  depends_on "python@3.11"
+  depends_on "git"
+
+  def install
+    # Create a virtualenv and install the package
+    virtualenv_create(libexec, "python3.11")
+    system libexec/"bin/pip", "install", "--no-binary", ":all:", buildpath
+
+    # Create wrapper script
+    (bin/"autocommit").write_env_script libexec/"bin/autocommit", PATH: "#{libexec}/bin:$PATH"
+  end
+
+  def caveats
+    <<~EOS
+      ╔═══════════════════════════════════════════════════════════════╗
+      ║  AI Auto Commit has been installed!                           ║
+      ╚═══════════════════════════════════════════════════════════════╝
+
+{{ metadata.post_install_message | indent(6) }}
+    EOS
+  end
+
+  test do
+    system "#{bin}/autocommit", "--help"
+  end
+end

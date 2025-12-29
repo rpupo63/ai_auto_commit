@@ -1,0 +1,18 @@
+# Package distribution tooling dependencies
+# Install with: pip install -r packaging/requirements.txt
+
+# Template engine
+jinja2>=3.1.0
+
+# TOML parsing and writing
+tomli>=2.0.0; python_version < '3.11'
+tomli-w>=1.0.0
+
+# Semantic versioning
+semver>=3.0.0
+
+# For downloading and calculating checksums
+requests>=2.31.0
+
+# For validation (optional)
+pydantic>=2.0.0

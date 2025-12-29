@@ -1,0 +1,12 @@
+ai-auto-commit (0.1.0-1) unstable; urgency=medium
+
+  Initial release with interactive setup wizard and multi-provider support.
+
+  - Interactive setup wizard (autocommit init)
+  - Support for 5 AI providers (OpenAI, Anthropic, Google, Mistral, Cohere)
+  - Token budget management
+  - Configuration stored in ~/.config/ai_auto_commit/config.json
+  - Smart diff analysis
+  - Safety features with backups
+
+ -- Your Name <your.email@example.com>  2025-12-27
