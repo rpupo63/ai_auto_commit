@@ -481,15 +481,16 @@ Note: Run 'autocommit init' for first-time setup.
         print("=" * 60)
         
         # Initialize API key
+        try:
+            from .api_client import init
+        except ImportError:
+            from api_client import init
+
         if args.api_key:
-            try:
-                from .api_client import init
-            except ImportError:
-                from api_client import init
             init(api_key=args.api_key, provider=args.provider)
         else:
-            # Try to initialize from environment (will be done lazily when model is used)
-            pass
+            # Initialize from config file or environment
+            init(provider=args.provider)
         
         commit_msg = auto_commit_and_push(
             model=args.model,

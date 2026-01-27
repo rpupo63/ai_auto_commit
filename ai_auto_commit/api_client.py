@@ -33,7 +33,9 @@ def init(
     RuntimeError
         If API key is not provided and not found in config file.
     """
-    # Initialize the main provider
+    from .models import get_all_api_keys
+
+    # Initialize the main provider if explicit key provided
     if api_key is not None:
         initialize_provider(provider, api_key.strip())
 
@@ -42,16 +44,12 @@ def init(
         if prov in get_all_providers():
             initialize_provider(prov, key.strip())
 
-    # If no explicit keys provided, try to initialize from config file
-    if api_key is None and not kwargs:
-        # Try to get API key from config file
-        key = get_api_key(provider)
-        if key:
-            initialize_provider(provider, key)
-        else:
-            # Don't raise error here - let it fail when model is actually used
-            # This allows users to initialize providers lazily
-            pass
+    # Initialize ALL providers that have API keys stored in config file
+    # This ensures the default model's provider is always initialized
+    stored_keys = get_all_api_keys()
+    for prov, key in stored_keys.items():
+        if key and prov in get_all_providers():
+            initialize_provider(prov, key.strip())
 
 
 def ensure_initialized() -> None:

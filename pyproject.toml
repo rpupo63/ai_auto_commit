@@ -39,13 +39,6 @@ classifiers = [
     "Topic :: Utilities",
     "Environment :: Console",
 ]
-
-[project.urls]
-Homepage = "https://github.com/yourusername/ai_auto_commit"
-Repository = "https://github.com/yourusername/ai_auto_commit"
-Issues = "https://github.com/yourusername/ai_auto_commit/issues"
-Changelog = "https://github.com/yourusername/ai_auto_commit/releases"
-
 dependencies = [
     "langchain-core>=0.1.0",
     "langchain-openai>=0.1.0",
@@ -55,6 +48,12 @@ dependencies = [
     "langchain-cohere>=0.1.0",
     "tiktoken>=0.5.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/ai_auto_commit"
+Repository = "https://github.com/yourusername/ai_auto_commit"
+Issues = "https://github.com/yourusername/ai_auto_commit/issues"
+Changelog = "https://github.com/yourusername/ai_auto_commit/releases"
 
 [project.scripts]
 autocommit = "ai_auto_commit.cli:main"

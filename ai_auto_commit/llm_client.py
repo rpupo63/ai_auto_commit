@@ -74,20 +74,55 @@ def initialize_provider(provider: Provider, api_key: str) -> None:
         raise ValueError(f"Unknown provider: {provider}")
 
 
+def _infer_provider_from_model_name(model_name: str) -> Provider | None:
+    """Infer the provider from a model name for custom/unknown models."""
+    model_lower = model_name.lower()
+
+    # OpenAI models
+    if model_lower.startswith(("gpt-", "o1", "o3", "text-", "davinci", "curie", "babbage", "ada")):
+        return "openai"
+
+    # Anthropic models
+    if model_lower.startswith("claude"):
+        return "anthropic"
+
+    # Google models
+    if model_lower.startswith("gemini"):
+        return "google"
+
+    # Mistral models
+    if model_lower.startswith(("mistral", "devstral", "codestral", "pixtral")):
+        return "mistral"
+
+    # Cohere models
+    if model_lower.startswith(("command", "embed", "rerank")):
+        return "cohere"
+
+    return None
+
+
 def get_llm(model_name: str, temperature: float = 0.2) -> BaseChatModel:
     """Get a LangChain LLM instance for the specified model."""
     global _model_instances
-    
+
     # Check cache
     cache_key = f"{model_name}_{temperature}"
     if cache_key in _model_instances:
         return _model_instances[cache_key]
-    
+
     config = get_model_config(model_name)
-    if not config:
-        raise ValueError(f"Unknown model: {model_name}")
-    
-    provider = config.provider
+    if config:
+        provider = config.provider
+    else:
+        # Try to infer provider from model name for custom models
+        provider = _infer_provider_from_model_name(model_name)
+        if not provider:
+            raise ValueError(
+                f"Unknown model: {model_name}. "
+                f"Could not infer provider. Use a model name starting with "
+                f"'gpt-' (OpenAI), 'claude' (Anthropic), 'gemini' (Google), "
+                f"'mistral' (Mistral), or 'command' (Cohere)."
+            )
     
     # Ensure provider is initialized
     if not _providers_initialized.get(provider, False):
@@ -196,7 +231,27 @@ def invoke_llm(
     try:
         message = HumanMessage(content=prompt)
         response = llm.invoke([message])
-        return response.content if hasattr(response, "content") else str(response)
+
+        # Handle different response content formats
+        if hasattr(response, "content"):
+            content = response.content
+            # Google models may return a list of content parts
+            if isinstance(content, list):
+                # Join text parts together
+                text_parts = []
+                for part in content:
+                    if isinstance(part, str):
+                        text_parts.append(part)
+                    elif hasattr(part, "text"):
+                        text_parts.append(part.text)
+                    elif isinstance(part, dict) and "text" in part:
+                        text_parts.append(part["text"])
+                return "".join(text_parts)
+            elif isinstance(content, str):
+                return content
+            else:
+                return str(content)
+        return str(response)
     except Exception as e:
         raise RuntimeError(f"Error invoking {model_name}: {e}")
 

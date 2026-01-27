@@ -14,32 +14,33 @@ except ImportError:
 
 def check_dangerous_git_state(target_dir: Path) -> bool:
     """Check if git is in a dangerous state that could cause data loss."""
+    import subprocess
+
+    # Check if we're in a merge or rebase state
+    merge_head = target_dir / ".git" / "MERGE_HEAD"
+    rebase_apply = target_dir / ".git" / "rebase-apply"
+    rebase_merge = target_dir / ".git" / "rebase-merge"
+
+    if merge_head.exists():
+        print("  → Warning: Repository is in merge state")
+        return True
+    if rebase_apply.exists() or rebase_merge.exists():
+        print("  → Warning: Repository is in rebase state")
+        return True
+
+    # Check if we're in detached HEAD state
     try:
-        # Check if we're in a merge or rebase state
-        merge_head = target_dir / ".git" / "MERGE_HEAD"
-        rebase_apply = target_dir / ".git" / "rebase-apply"
-        rebase_merge = target_dir / ".git" / "rebase-merge"
-        
-        if merge_head.exists():
-            print("  → Warning: Repository is in merge state")
-            return True
-        if rebase_apply.exists() or rebase_merge.exists():
-            print("  → Warning: Repository is in rebase state")
-            return True
-            
-        # Check if we're in detached HEAD state
         head_ref = run_git_command_output(
             target_dir, "rev-parse", "--abbrev-ref", "HEAD"
         ).strip()
         if head_ref == "HEAD":
             print("  → Warning: Repository is in detached HEAD state")
             return True
-            
-        return False
-        
-    except Exception:
-        print("  → Warning: Could not check git state")
-        return True  # Assume dangerous if we can't check
+    except subprocess.CalledProcessError:
+        # HEAD doesn't exist - this is a new repo with no commits, which is safe
+        pass
+
+    return False
 
 
 def verify_working_directory_safety(target_dir: Path) -> bool:
