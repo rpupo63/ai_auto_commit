@@ -1,4 +1,4 @@
-Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/release_packaging-manuals/copyright-format/1.0/
 Upstream-Name: ai-auto-commit
 Upstream-Contact: Your Name <your.email@example.com>
 Source: https://github.com/yourusername/ai_auto_commit

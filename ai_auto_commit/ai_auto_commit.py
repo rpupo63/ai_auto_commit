@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 # Import modules - handle both package and direct script execution
 try:
@@ -35,6 +35,7 @@ try:
         parse_name_status,
         parse_numstat,
     )
+    from .large_diff_handler import handle_large_diff
     from .token_budget import get_max_token_budget, get_tokens_spent, reset_token_budget
     from .token_utils import token_len
     from .models import get_default_model
@@ -64,6 +65,7 @@ except ImportError:
         parse_name_status,
         parse_numstat,
     )
+    from large_diff_handler import handle_large_diff
     from token_budget import get_max_token_budget, get_tokens_spent, reset_token_budget
     from token_utils import token_len
     from models import get_default_model
@@ -74,6 +76,7 @@ def auto_commit_and_push(
     model: Optional[str] = None,
     temperature: float = 0.2,
     remote: str = "origin",
+    large_diff_strategy: Optional[Literal["split", "truncate", "cancel"]] = None,
 ) -> str:
     """
     Generate a commit message from already staged files, commit, and push.
@@ -89,6 +92,10 @@ def auto_commit_and_push(
         Sampling temperature for the completion.
     remote : str
         Git remote to push to (default 'origin').
+    large_diff_strategy : str, optional
+        How to handle diffs that exceed the token limit: 'split' (split and
+        summarize recursively), 'truncate' (cut to limit), or 'cancel'. If None,
+        the user is prompted when a large diff is detected.
 
     Returns
     -------
@@ -224,31 +231,44 @@ def auto_commit_and_push(
 
     print(f"Diff size: {len(diff):,} characters ({token_len(diff):,} tokens)")
 
-    # ── 3. Prefer token-light heuristic bullets → single small LLM call ─────
-    try:
-        name_status_out = run_git_command_output(
-            target_dir, "diff", "--cached", "--name-status"
-        )
-        numstat_out = run_git_command_output(
-            target_dir, "diff", "--cached", "--numstat"
-        )
-        file_status = parse_name_status(name_status_out)
-        file_stats = parse_numstat(numstat_out)
-        bullets = build_heuristic_bullets(file_status, file_stats)
-    except subprocess.CalledProcessError:
-        bullets = []
-
-    if bullets:
-        print("Composing commit from summarized staged changes (no raw diffs)...")
-        commit_msg = compose_commit_from_bullets(
-            bullets, model=model, temperature=temperature
-        )
+    # ── 3. Estimate tokens and handle large diffs before any AI call ─────
+    # If diff exceeds model/budget limit, user can choose: split & summarize,
+    # truncate to limit, or cancel.
+    is_final_msg, result = handle_large_diff(
+        diff, model, temperature, strategy=large_diff_strategy
+    )
+    
+    if is_final_msg:
+        commit_msg = result
     else:
-        # Fallback: use hierarchical diff-based approach if bullets couldn't be built
-        print("Using smart hierarchical commit message generation...")
-        commit_msg = smart_hierarchical_commit_message(
-            diff, model=model, temperature=temperature
-        )
+        # result is the (possibly truncated) diff
+        diff = result
+        
+        # ── 4. Prefer token-light heuristic bullets → single small LLM call ─────
+        try:
+            name_status_out = run_git_command_output(
+                target_dir, "diff", "--cached", "--name-status"
+            )
+            numstat_out = run_git_command_output(
+                target_dir, "diff", "--cached", "--numstat"
+            )
+            file_status = parse_name_status(name_status_out)
+            file_stats = parse_numstat(numstat_out)
+            bullets = build_heuristic_bullets(file_status, file_stats)
+        except subprocess.CalledProcessError:
+            bullets = []
+
+        if bullets:
+            print("Composing commit from summarized staged changes (no raw diffs)...")
+            commit_msg = compose_commit_from_bullets(
+                bullets, model=model, temperature=temperature
+            )
+        else:
+            # Fallback: use hierarchical diff-based approach if bullets couldn't be built
+            print("Using smart hierarchical commit message generation...")
+            commit_msg = smart_hierarchical_commit_message(
+                diff, model=model, temperature=temperature
+            )
     
     # Show final token usage
     from .token_budget import get_max_token_budget
@@ -307,13 +327,6 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
     )
     
     parser.add_argument(
-        "--api-key",
-        type=str,
-        default=None,
-        help="API key for the selected provider (if not provided, uses environment variables)"
-    )
-    
-    parser.add_argument(
         "--provider",
         type=str,
         default="openai",
@@ -349,6 +362,16 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
         default=None,
         metavar="MODEL",
         help="Set the default model to use and exit. Example: --set-default-model gpt-4o"
+    )
+    
+    parser.add_argument(
+        "--large-diff",
+        type=str,
+        default=None,
+        choices=["split", "truncate", "cancel"],
+        metavar="STRATEGY",
+        help="When diff exceeds token limit: 'split' (summarize chunks then combine), "
+             "'truncate' (cut to limit), or 'cancel'. Default: prompt interactively."
     )
     
     args = parser.parse_args()
@@ -391,6 +414,7 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
             model=args.model,
             temperature=args.temperature,
             remote=args.remote,
+            large_diff_strategy=args.large_diff,
         )
         
         print("\n" + "=" * 60)

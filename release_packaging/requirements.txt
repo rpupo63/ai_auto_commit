@@ -1,5 +1,5 @@
 # Package distribution tooling dependencies
-# Install with: pip install -r packaging/requirements.txt
+# Install with: pip install -r release_packaging/requirements.txt
 
 # Template engine
 jinja2>=3.1.0

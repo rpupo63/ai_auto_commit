@@ -26,16 +26,38 @@ An intelligent, AI-powered git commit and push tool that automatically generates
 
 ## Installation
 
-### Quick Install (Recommended)
+### Global install (latest from this repo)
+
+Use this if you develop or clone this repo and want `autocommit` available everywhere, always running this repo’s latest code:
+
+```bash
+cd /path/to/ai_tools/auto_commit
+./install-global.sh
+```
+
+Or without the script (requires [pipx](https://pypa.github.io/pipx/)):
+
+```bash
+cd /path/to/ai_tools/auto_commit
+pipx install -e .
+```
+
+Then run `autocommit` from any directory. After you pull changes, no reinstall is needed—the command uses this repo’s source.
+
+---
+
+### Quick Install (Released version)
 
 Choose the method for your platform:
 
 #### macOS / Linux (One-line Install)
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/yourusername/ai_auto_commit/main/install.sh | bash
 ```
 
 #### Windows (PowerShell)
+
 ```powershell
 irm https://raw.githubusercontent.com/yourusername/ai_auto_commit/main/install.ps1 | iex
 ```
@@ -43,51 +65,62 @@ irm https://raw.githubusercontent.com/yourusername/ai_auto_commit/main/install.p
 ### Package Manager Installation
 
 #### Linux (Flatpak) - Universal
+
 ```bash
 flatpak install flathub com.github.yourusername.AIAutoCommit
 ```
 
 #### Arch Linux (yay/AUR)
+
 ```bash
 yay -S ai-auto-commit
 ```
 
 #### Debian/Ubuntu (apt)
+
 ```bash
 sudo apt install ai-auto-commit
 ```
 
 #### macOS (Homebrew)
+
 ```bash
 brew tap yourusername/tap
 brew install ai-auto-commit
 ```
 
 #### Windows (winget) - Recommended
+
 ```powershell
 winget install YourPublisher.AIAutoCommit
 ```
 
 #### Windows (Chocolatey)
+
 ```powershell
 choco install ai-auto-commit
 ```
 
 #### Windows (Scoop)
+
 ```powershell
 scoop bucket add extras
 scoop install ai-auto-commit
 ```
 
 #### Universal (pip)
+
 ```bash
 pip install ai-auto-commit
 ```
 
 #### Universal (pipx) - Recommended for CLI tools
+
 ```bash
 pipx install ai-auto-commit
 ```
+
+---
 
 ### After Installation
 
@@ -202,7 +235,7 @@ autocommit config set model my-custom-model
 
 - **OpenAI**: `gpt-5.2`, `gpt-5.1`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`, `gpt-4`, `gpt-3.5-turbo`, `o3`, `o3-mini`
 - **Anthropic**: `claude-opus-4.5`, `claude-sonnet-4.5`, `claude-haiku-4.5`, `claude-3-5-sonnet-20241022`
-- **Google**: `gemini-3-pro-preview-high`, `gemini-3-flash`, `gemini-1.5-pro`, `gemini-1.5-flash`
+- **Google**: `gemini-3-pro-preview-high`, `gemini-3-flash-preview`, `gemini-1.5-pro`, `gemini-1.5-flash`
 - **Mistral**: `devstral-2`, `mistral-large-latest`, `mistral-medium-latest`, `mistral-small-latest`
 - **Cohere**: `command-r-plus`, `command-r`
 
@@ -509,6 +542,7 @@ Your API keys are stored locally in the config file (`~/.config/ai_auto_commit/c
 - On shared systems, ensure proper file permissions on the config directory
 
 **The tool:**
+
 - Only stores keys locally (never transmitted to any third party)
 - Only sends API requests to your chosen AI provider
 - Never collects telemetry or analytics

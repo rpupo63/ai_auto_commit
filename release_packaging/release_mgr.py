@@ -6,10 +6,10 @@ This tool manages package distribution across multiple package managers
 by generating manifests from templates with pyproject.toml as the single source of truth.
 
 Usage:
-    python -m packaging.release_mgr generate        # Generate all manifests
-    python -m packaging.release_mgr bump [patch|minor|major]  # Bump version
-    python -m packaging.release_mgr build           # Build package and update checksums
-    python -m packaging.release_mgr validate        # Validate generated manifests
+    python -m release_packaging.release_mgr generate        # Generate all manifests
+    python -m release_packaging.release_mgr bump [patch|minor|major]  # Bump version
+    python -m release_packaging.release_mgr build           # Build package and update checksums
+    python -m release_packaging.release_mgr validate        # Validate generated manifests
 """
 
 import sys
@@ -277,12 +277,12 @@ class ReleaseManager:
             project_root: Project root directory (default: auto-detect)
         """
         if project_root is None:
-            # Auto-detect: assume script is in packaging/
+            # Auto-detect: assume script is in release_packaging/
             self.project_root = Path(__file__).parent.parent
         else:
             self.project_root = Path(project_root)
 
-        self.packaging_dir = self.project_root / "packaging"
+        self.packaging_dir = self.project_root / "release_packaging"
         self.template_dir = self.packaging_dir / "templates"
         self.generated_dir = self.packaging_dir / "generated"
         self.pyproject_path = self.project_root / "pyproject.toml"
@@ -376,7 +376,7 @@ class ReleaseManager:
         print(f"\n✓ Version bumped to {new_version}")
         print("\nNext steps:")
         print("  1. Update release notes in pyproject.toml")
-        print("  2. Run: python -m packaging.release_mgr build")
+        print("  2. Run: python -m release_packaging.release_mgr build")
         print("  3. Review changes: git diff")
         print(f"  4. Commit: git commit -am 'chore: bump version to {new_version}'")
         print(f"  5. Tag: git tag -a v{new_version} -m 'Release v{new_version}'")

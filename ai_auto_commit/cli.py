@@ -46,91 +46,28 @@ def prompt_for_files(target_dir: Path) -> str:
 
 
 def prompt_for_model() -> str:
-    """Prompt user for model selection with a dropdown-like interface grouped by provider."""
+    """Prompt user for model selection using model_picker's interactive selector."""
+    try:
+        from .models import get_default_model
+    except ImportError:
+        from models import get_default_model
+
+    from ai_model_picker import select_provider, select_model
+
     print("\n" + "=" * 60)
     print("🤖 Model Selection")
     print("=" * 60)
-    
-    # Import models configuration
-    try:
-        from .models import (
-            MODELS,
-            Provider,
-            get_all_providers,
-            get_default_model,
-            get_provider_display_name,
-        )
-    except ImportError:
-        from models import (
-            MODELS,
-            Provider,
-            get_all_providers,
-            get_default_model,
-            get_provider_display_name,
-        )
-    
-    providers = sorted(get_all_providers())
-    default_model = get_default_model()
-    
-    # Build model list grouped by provider
-    all_models: list[tuple[str, str]] = []
-    model_index = 1
-    
-    for provider in providers:
-        provider_name = get_provider_display_name(provider)
-        print(f"\n{provider_name}:")
-        
-        provider_models = [
-            (name, config)
-            for name, config in MODELS.items()
-            if config.provider == provider
-        ]
-        provider_models.sort(key=lambda x: x[1].default, reverse=True)  # Default first
-        
-        for model_name, config in provider_models:
-            marker = " ← DEFAULT" if model_name == default_model else ""
-            print(f"  {model_index}. {config.display_name} - {config.description}{marker}")
-            all_models.append((model_index, model_name))
-            model_index += 1
-    
-    # Add custom option
-    print(f"\n{model_index}. Enter custom model name")
-    all_models.append((model_index, "custom"))
-    max_choice = model_index
-    
-    while True:
-        try:
-            choice = input(f"\nSelect model [1-{max_choice}, default: 1]: ").strip()
-            
-            if not choice:
-                return default_model
-            
-            choice_num = int(choice)
-            if 1 <= choice_num <= max_choice:
-                # Find the model name for this choice
-                selected_model = None
-                for idx, model_name in all_models:
-                    if idx == choice_num:
-                        selected_model = model_name
-                        break
-                
-                if selected_model == "custom":
-                    custom_model = input("Enter custom model name: ").strip()
-                    if custom_model:
-                        return custom_model
-                    else:
-                        print("Invalid model name. Please try again.")
-                        continue
-                
-                if selected_model:
-                    return selected_model
-            else:
-                print(f"Please enter a number between 1 and {max_choice}")
-        except ValueError:
-            print("Please enter a valid number")
-        except KeyboardInterrupt:
-            print("\n\nOperation cancelled by user.")
-            sys.exit(0)
+
+    provider = select_provider("Select AI Provider")
+    if not provider:
+        return get_default_model()
+    if provider == "none":
+        return "template"
+
+    model = select_model(provider, "Select Model")
+    if model:
+        return model
+    return get_default_model()
 
 
 def prompt_for_commit_comment(commit_msg: str) -> str:
@@ -319,12 +256,18 @@ Note: Run 'autocommit init' for first-time setup.
         help="API key for the selected provider (if not provided, uses environment variables)"
     )
     
+    # Provider choices from model_picker (same as provider_models.json)
+    try:
+        from .models import get_all_providers
+    except ImportError:
+        from models import get_all_providers
+    _provider_choices = get_all_providers()
     parser.add_argument(
         "--provider",
         type=str,
         default="openai",
-        choices=["openai", "anthropic", "google", "mistral", "cohere"],
-        help="AI provider to use (default: openai)"
+        choices=_provider_choices,
+        help="AI provider to use (default: openai). Choices from model_picker."
     )
     
     parser.add_argument(

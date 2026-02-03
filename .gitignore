@@ -6,7 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
-# Distribution / packaging
+# Distribution / release_packaging
 .Python
 build/
 develop-eggs/
@@ -139,6 +139,6 @@ pkg/
 src/
 
 # Packaging system
-packaging/.venv/
-packaging/backup/
-# Note: packaging/generated/ is intentionally tracked for transparency
+release_packaging/.venv/
+release_packaging/backup/
+# Note: release_packaging/generated/ is intentionally tracked for transparency

@@ -61,7 +61,7 @@ else
 fi
 
 # 4. Check virtual environment
-VENV_DIR="$PROJECT_ROOT/packaging/.venv"
+VENV_DIR="$PROJECT_ROOT/release_packaging/.venv"
 if [ ! -d "$VENV_DIR" ]; then
     echo -e "${YELLOW}${WARN}${NC} Virtual environment not found (will be created on first run)"
     WARNINGS=$((WARNINGS + 1))
@@ -99,8 +99,8 @@ REQUIRED_FILES=(
     "pyproject.toml"
     "README.md"
     "LICENSE"
-    "packaging/release_mgr.py"
-    "packaging/requirements.txt"
+    "release_packaging/release_mgr.py"
+    "release_packaging/requirements.txt"
 )
 
 for file in "${REQUIRED_FILES[@]}"; do
@@ -114,7 +114,7 @@ done
 
 # 8. Check templates
 echo "Checking templates..."
-TEMPLATE_COUNT=$(find packaging/templates -name "*.j2" 2>/dev/null | wc -l)
+TEMPLATE_COUNT=$(find release_packaging/templates -name "*.j2" 2>/dev/null | wc -l)
 if [ "$TEMPLATE_COUNT" -ge 14 ]; then
     echo -e "${GREEN}${CHECK}${NC} Found $TEMPLATE_COUNT templates"
 else
@@ -125,7 +125,7 @@ fi
 # 9. Dry run manifest generation
 if [ -d "$VENV_DIR" ]; then
     echo "Testing manifest generation..."
-    if "$VENV_DIR/bin/python" -m packaging.release_mgr validate 2>/dev/null; then
+    if "$VENV_DIR/bin/python" -m release_packaging.release_mgr validate 2>/dev/null; then
         echo -e "${GREEN}${CHECK}${NC} Manifests can be generated"
     else
         echo -e "${RED}${CROSS}${NC} Manifest generation failed"

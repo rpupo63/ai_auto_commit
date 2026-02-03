@@ -3,7 +3,7 @@ class AiAutoCommit < Formula
 
   desc "AI-powered git commit and push tool with interactive setup"
   homepage "https://github.com/yourusername/ai_auto_commit"
-  url "https://files.pythonhosted.org/packages/source/a/ai-auto-commit/ai-auto-commit-0.1.0.tar.gz"
+  url "https://files.pythonhosted.org/packages/source/a/ai-auto-commit/ai-auto-commit-0.1.1.tar.gz"
   sha256 "REPLACE_WITH_ACTUAL_SHA256"
   license "MIT"
 

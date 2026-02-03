@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import socket
 
-from .llm_client import Provider, initialize_provider
-from .models import get_all_providers, get_api_key
+from .llm_client import initialize_provider
+from .models import Provider, get_all_providers, get_api_key
 
 
 def init(

@@ -175,7 +175,7 @@ The Arch User Repository (AUR) allows Arch Linux users to install via `yay` or o
 
 ### Updating
 
-For updates, increment `pkgrel` for packaging changes, or `pkgver` for new releases.
+For updates, increment `pkgrel` for release_packaging changes, or `pkgver` for new releases.
 
 ---
 
@@ -198,10 +198,10 @@ Debian packages (.deb) can be distributed via Personal Package Archives (PPA), d
 
 ### Publishing Steps
 
-1. **Use generated Debian files** from `packaging/generated/debian/`:
+1. **Use generated Debian files** from `release_packaging/generated/debian/`:
 
    ```bash
-   cp -r packaging/generated/debian debian/
+   cp -r release_packaging/generated/debian debian/
    ```
 
 2. **Update changelog** with new version:
@@ -283,7 +283,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y devscripts debhelper dh-python python3-all
       - name: Setup Debian files
-        run: cp -r packaging/generated/debian debian/
+        run: cp -r release_packaging/generated/debian debian/
       - name: Build package
         run: dpkg-buildpackage -us -uc -b
       - name: Upload artifacts
@@ -327,11 +327,11 @@ Flatpak provides a universal package format for Linux distributions.
 
 ### Publishing Steps
 
-1. **Use generated Flatpak files** from `packaging/generated/flatpak/`:
+1. **Use generated Flatpak files** from `release_packaging/generated/flatpak/`:
 
    ```bash
-   cp packaging/generated/flatpak/com.github.yourusername.AIAutoCommit.yaml flatpak/
-   cp packaging/generated/flatpak/com.github.yourusername.AIAutoCommit.metainfo.xml flatpak/
+   cp release_packaging/generated/flatpak/com.github.yourusername.AIAutoCommit.yaml flatpak/
+   cp release_packaging/generated/flatpak/com.github.yourusername.AIAutoCommit.metainfo.xml flatpak/
    ```
 
 2. **Update version and checksums** in the YAML file:
@@ -478,7 +478,7 @@ Chocolatey is the package manager for Windows.
 
 ### Publishing Steps
 
-1. **Install Chocolatey packaging tools**:
+1. **Install Chocolatey release_packaging tools**:
 
    ```powershell
    choco install checksum
@@ -620,10 +620,10 @@ Windows Package Manager (winget) is Microsoft's official package manager for Win
 
 ### Publishing Steps
 
-1. **Use generated Winget manifests** from `packaging/generated/winget/manifests/`:
+1. **Use generated Winget manifests** from `release_packaging/generated/winget/manifests/`:
 
    ```bash
-   cp -r packaging/generated/winget/manifests/* winget/manifests/
+   cp -r release_packaging/generated/winget/manifests/* winget/manifests/
    ```
 
 2. **Update manifest files**:
@@ -724,7 +724,7 @@ jobs:
       - name: Setup manifests
         run: |
           mkdir -p winget-output/manifests/y/YourPublisher/AIAutoCommit/${{ github.event.release.tag_name }}
-          cp packaging/generated/winget/manifests/* winget-output/manifests/y/YourPublisher/AIAutoCommit/${{ github.event.release.tag_name }}/
+          cp release_packaging/generated/winget/manifests/* winget-output/manifests/y/YourPublisher/AIAutoCommit/${{ github.event.release.tag_name }}/
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -754,10 +754,10 @@ When releasing a new version, update these files:
 7. **`flatpak/com.github.yourusername.AIAutoCommit.yaml`**: Update version and checksums (Flatpak)
 8. **`winget/manifests/*.yaml`**: Update `PackageVersion: 0.2.0` (Winget)
 
-**Note**: Use the packaging system's `release_mgr.py` to automatically update most files:
+**Note**: Use the release_packaging system's `release_mgr.py` to automatically update most files:
 
 ```bash
-cd packaging
+cd release_packaging
 python release_mgr.py bump-version 0.2.0
 ```
 

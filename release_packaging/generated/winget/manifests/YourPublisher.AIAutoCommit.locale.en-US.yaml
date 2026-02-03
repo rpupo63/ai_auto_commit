@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
 
 PackageIdentifier: Your Name.AIAutoCommit
-PackageVersion: 0.1.0
+PackageVersion: 0.1.1
 PackageLocale: en-US
 Publisher: Your Name
 PublisherUrl: https://github.com/yourusername/ai_auto_commit
@@ -44,6 +44,6 @@ ReleaseNotes: |-
   - Configuration stored in ~/.config/ai_auto_commit/config.json
   - Smart diff analysis
   - Safety features with backups
-ReleaseNotesUrl: https://github.com/yourusername/ai_auto_commit/releases/tag/v0.1.0
+ReleaseNotesUrl: https://github.com/yourusername/ai_auto_commit/releases/tag/v0.1.1
 ManifestType: defaultLocale
 ManifestVersion: 1.6.0

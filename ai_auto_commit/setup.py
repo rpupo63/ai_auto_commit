@@ -1,43 +1,38 @@
-"""Interactive setup wizard for AI Auto Commit."""
+"""Interactive setup wizard for AI Auto Commit.
+
+This module delegates to ai_model_picker for the core setup logic,
+with app-specific customizations for token budget configuration.
+"""
 
 from __future__ import annotations
 
 import sys
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from .models import Provider
+from ai_model_picker import (
+    setup_wizard as _base_setup_wizard,
+    configure_api_keys,
+    display_config as _display_config,
+    get_config_path,
+    load_config,
+    save_config,
+    get_provider_display_name,
+    get_all_api_keys,
+    UserConfig,
+)
 
+# App-specific config name
+APP_NAME = "ai_auto_commit"
+
+# Import local token budget functions
 try:
-    from .models import (
-        get_all_api_keys,
-        get_all_providers,
-        get_api_key,
-        get_config_path,
-        get_default_model,
-        get_provider_display_name,
-        get_token_budget,
-        set_api_key,
-        set_default_model,
-        set_token_budget,
-    )
+    from .models import get_token_budget, set_token_budget
 except ImportError:
-    from models import (
-        get_all_api_keys,
-        get_all_providers,
-        get_api_key,
-        get_config_path,
-        get_default_model,
-        get_provider_display_name,
-        get_token_budget,
-        set_api_key,
-        set_default_model,
-        set_token_budget,
-    )
+    from models import get_token_budget, set_token_budget
 
 
 def setup_wizard() -> None:
-    """Run the interactive setup wizard."""
+    """Run the interactive setup wizard for AI Auto Commit."""
     print("=" * 70)
     print("  AI Auto Commit - Interactive Setup Wizard")
     print("=" * 70)
@@ -51,7 +46,7 @@ def setup_wizard() -> None:
     print()
 
     # Check if already configured
-    existing_keys = get_all_api_keys()
+    existing_keys = get_all_api_keys(APP_NAME)
     if existing_keys:
         print("You already have API keys configured for:")
         for provider in existing_keys:
@@ -63,77 +58,55 @@ def setup_wizard() -> None:
             return
         print()
 
-    # API Key Setup
+    # Step 1: API Key Setup
     print("-" * 70)
     print("Step 1: Configure AI Provider API Keys")
     print("-" * 70)
     print()
     print("You can configure multiple providers. At least one is required.")
-    print()
 
-    providers = get_all_providers()
-    configured_providers = []
-
-    for provider in sorted(providers):
-        provider_name = get_provider_display_name(provider)
-        print(f"\n{provider_name}:")
-        print("-" * 40)
-
-        # Show existing key if any
-        existing_key = get_api_key(provider)
-        if existing_key:
-            masked_key = existing_key[:8] + "..." + existing_key[-4:] if len(existing_key) > 12 else "***"
-            print(f"Current key: {masked_key}")
-            response = input("Update this key? (y/N): ").strip().lower()
-            if response not in ['y', 'yes']:
-                configured_providers.append(provider)
-                continue
-
-        # Prompt for new key
-        api_key = input(f"Enter {provider_name} API key (or press Enter to skip): ").strip()
-
-        if api_key:
-            set_api_key(provider, api_key)
-            configured_providers.append(provider)
-            print(f"✓ {provider_name} API key saved")
-        else:
-            print(f"  Skipped {provider_name}")
-
-    if not configured_providers:
-        print("\n❌ Error: You must configure at least one API provider to use this tool.")
-        print("Please run 'autocommit init' again and configure at least one provider.")
-        sys.exit(1)
+    configured_providers = configure_api_keys(
+        app_name=APP_NAME,
+        require_at_least_one=True
+    )
 
     print()
     print("=" * 70)
-    print(f"✓ API keys configured for: {', '.join(get_provider_display_name(p) for p in configured_providers)}")
+    display_names = [get_provider_display_name(p) for p in configured_providers]
+    print(f"  API keys configured for: {', '.join(display_names)}")
     print("=" * 70)
 
-    # Default Model Setup
+    # Step 2: Default Model Setup
+    from ai_model_picker import select_provider, select_model
+
+    config = load_config(APP_NAME)
+
     print()
     print("-" * 70)
     print("Step 2: Choose Default Model")
     print("-" * 70)
     print()
 
-    current_default = get_default_model()
+    current_default = config.model
     print(f"Current default model: {current_default}")
     print()
     print("You can choose a default model, or press Enter to keep the current default.")
-    print("Popular models:")
-    print("  OpenAI:     gpt-4o, gpt-4o-mini, gpt-5.2")
-    print("  Anthropic:  claude-sonnet-4.5, claude-opus-4.5")
-    print("  Google:     gemini-3-pro-preview-high, gemini-3-flash")
     print()
 
-    model = input(f"Enter default model name [default: {current_default}]: ").strip()
-    if model:
-        set_default_model(model)
-        print(f"✓ Default model set to: {model}")
+    provider = select_provider("Select Provider for Default Model")
+    if provider and provider != "none":
+        model = select_model(provider, "Select Default Model")
+        if model:
+            config.provider = provider
+            config.model = model
+            save_config(config, APP_NAME)
+            print(f"  Default model set to: {model}")
+        else:
+            print(f"  Keeping current default: {current_default}")
     else:
         print(f"  Keeping current default: {current_default}")
 
-    # Token Budget Setup
+    # Step 3: Token Budget Setup (app-specific)
     print()
     print("-" * 70)
     print("Step 3: Configure Token Budget")
@@ -155,12 +128,12 @@ def setup_wizard() -> None:
         try:
             budget = int(budget_input.replace(",", ""))
             if budget <= 0:
-                print("❌ Error: Token budget must be positive. Keeping current value.")
+                print("  Error: Token budget must be positive. Keeping current value.")
             else:
                 set_token_budget(budget)
-                print(f"✓ Token budget set to: {budget:,} tokens")
+                print(f"  Token budget set to: {budget:,} tokens")
         except ValueError:
-            print("❌ Error: Invalid number. Keeping current value.")
+            print("  Error: Invalid number. Keeping current value.")
     else:
         print(f"  Keeping current budget: {current_budget:,} tokens")
 
@@ -170,7 +143,7 @@ def setup_wizard() -> None:
     print("  Setup Complete!")
     print("=" * 70)
     print()
-    print("Configuration saved to:", get_config_path())
+    print("Configuration saved to:", get_config_path(APP_NAME))
     print()
     print("You're ready to use AI Auto Commit!")
     print()
@@ -182,4 +155,14 @@ def setup_wizard() -> None:
     print("For more information:")
     print("  autocommit --help")
     print("  autocommit config get")
+    print()
+
+
+def display_config(show_keys: bool = False) -> None:
+    """Display current configuration."""
+    _display_config(app_name=APP_NAME, show_keys=show_keys)
+
+    # Also show token budget (app-specific)
+    current_budget = get_token_budget()
+    print(f"Token budget: {current_budget:,} tokens")
     print()

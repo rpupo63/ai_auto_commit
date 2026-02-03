@@ -32,7 +32,7 @@ UPLOAD="⬆️"
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-VENV_DIR="$PROJECT_ROOT/packaging/.venv"
+VENV_DIR="$PROJECT_ROOT/release_packaging/.venv"
 
 # Helper functions
 info() {
@@ -203,7 +203,7 @@ fi
 
 info "Installing/updating dependencies..."
 "$VENV_DIR/bin/pip" install -q --upgrade pip
-"$VENV_DIR/bin/pip" install -q -r "$PROJECT_ROOT/packaging/requirements.txt"
+"$VENV_DIR/bin/pip" install -q -r "$PROJECT_ROOT/release_packaging/requirements.txt"
 "$VENV_DIR/bin/pip" install -q build twine
 success "Dependencies installed"
 
@@ -237,7 +237,7 @@ fi
 
 if [ "$DRY_RUN" != "--dry-run" ]; then
     info "Bumping version in pyproject.toml and regenerating manifests..."
-    "$VENV_DIR/bin/python" -m packaging.release_mgr bump "$VERSION_PART"
+    "$VENV_DIR/bin/python" -m release_packaging.release_mgr bump "$VERSION_PART"
     success "Version bumped to $NEW_VERSION"
 else
     success "Would bump version to $NEW_VERSION (dry run)"
@@ -264,7 +264,7 @@ if [ "$DRY_RUN" != "--dry-run" ]; then
         success "Release notes updated"
         # Regenerate manifests with new release notes
         info "Regenerating manifests with updated release notes..."
-        "$VENV_DIR/bin/python" -m packaging.release_mgr generate
+        "$VENV_DIR/bin/python" -m release_packaging.release_mgr generate
         success "Manifests regenerated"
     fi
 else
@@ -299,7 +299,7 @@ step "Step 6: Validate Manifests"
 
 if [ "$DRY_RUN" != "--dry-run" ]; then
     info "Validating generated manifests..."
-    "$VENV_DIR/bin/python" -m packaging.release_mgr validate
+    "$VENV_DIR/bin/python" -m release_packaging.release_mgr validate
     success "Manifests validated"
 else
     success "Would validate manifests (dry run)"
@@ -310,7 +310,7 @@ step "Step 7: Build Package"
 
 if [ "$DRY_RUN" != "--dry-run" ]; then
     info "Building Python package..."
-    "$VENV_DIR/bin/python" -m packaging.release_mgr build
+    "$VENV_DIR/bin/python" -m release_packaging.release_mgr build
     success "Package built and checksums calculated"
 
     # Show built files
@@ -426,10 +426,10 @@ if [ "$DRY_RUN" != "--dry-run" ]; then
             --title "Release $NEW_VERSION" \
             --notes-file <(echo "$RELEASE_NOTES") \
             dist/*$NEW_VERSION* \
-            packaging/generated/PKGBUILD \
-            packaging/generated/Formula/ai-auto-commit.rb \
-            packaging/generated/install.sh \
-            packaging/generated/install.ps1
+            release_packaging/generated/PKGBUILD \
+            release_packaging/generated/Formula/ai-auto-commit.rb \
+            release_packaging/generated/install.sh \
+            release_packaging/generated/install.ps1
 
         success "GitHub release created"
         info "View at: $(gh release view $TAG_NAME --json url -q .url)"
@@ -492,41 +492,41 @@ echo "${CYAN}Homebrew:${NC}"
 echo "  1. Fork/clone: https://github.com/$GITHUB_USERNAME/homebrew-tap"
 echo "  2. Update Formula with new version and SHA256"
 echo "  3. Submit PR"
-echo "  OR: cp packaging/generated/Formula/ai-auto-commit.rb ../homebrew-tap/Formula/"
+echo "  OR: cp release_packaging/generated/Formula/ai-auto-commit.rb ../homebrew-tap/Formula/"
 echo ""
 
 echo "${CYAN}Arch Linux (AUR):${NC}"
 echo "  1. Clone AUR repo: git clone ssh://aur@aur.archlinux.org/ai-auto-commit.git"
-echo "  2. cp packaging/generated/PKGBUILD aur-repo/"
+echo "  2. cp release_packaging/generated/PKGBUILD aur-repo/"
 echo "  3. cd aur-repo && makepkg --printsrcinfo > .SRCINFO"
 echo "  4. git commit -am 'Update to $NEW_VERSION' && git push"
 echo ""
 
 echo "${CYAN}Chocolatey:${NC}"
 echo "  1. Update package at https://push.chocolatey.org/"
-echo "  2. Upload packaging/generated/chocolatey/"
+echo "  2. Upload release_packaging/generated/chocolatey/"
 echo ""
 
 echo "${CYAN}Scoop:${NC}"
 echo "  1. Fork/clone scoop bucket"
-echo "  2. cp packaging/generated/scoop/ai-auto-commit.json bucket/"
+echo "  2. cp release_packaging/generated/scoop/ai-auto-commit.json bucket/"
 echo "  3. Submit PR"
 echo ""
 
 echo "${CYAN}WinGet:${NC}"
 echo "  1. Fork: https://github.com/microsoft/winget-pkgs"
 echo "  2. Create manifests in manifests/y/YourPublisher/AIAutoCommit/$NEW_VERSION/"
-echo "  3. Copy files from packaging/generated/winget/manifests/"
+echo "  3. Copy files from release_packaging/generated/winget/manifests/"
 echo "  4. Submit PR"
 echo ""
 
 echo "${CYAN}Flatpak:${NC}"
 echo "  Note: Flatpak requires significant manual work to generate dependency sources"
-echo "  Generated base files are in packaging/generated/flatpak/"
+echo "  Generated base files are in release_packaging/generated/flatpak/"
 echo ""
 
 echo "${CYAN}Debian:${NC}"
-echo "  Generated files are in packaging/generated/debian/"
+echo "  Generated files are in release_packaging/generated/debian/"
 echo "  Consider setting up a PPA or providing .deb files via GitHub releases"
 echo ""
 

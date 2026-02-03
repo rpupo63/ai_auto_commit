@@ -1,4 +1,4 @@
-ai-auto-commit (0.1.0-1) unstable; urgency=medium
+ai-auto-commit (0.1.1-1) unstable; urgency=medium
 
   Initial release with interactive setup wizard and multi-provider support.
 

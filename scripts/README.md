@@ -138,9 +138,9 @@ This directory contains local CI/CD scripts for managing releases from your comp
 - Editor backups (`*~`, `*.swp`)
 
 **Deep cleanup also removes:**
-- `packaging/.venv/` (virtual environment)
-- `packaging/backup/` (original file backups)
-- `packaging/generated/` (generated manifests)
+- `release_packaging/.venv/` (virtual environment)
+- `release_packaging/backup/` (original file backups)
+- `release_packaging/generated/` (generated manifests)
 
 ⚠️ **Warning:** Deep clean removes files that may take time to regenerate. Only use when you know what you're doing.
 
@@ -181,7 +181,7 @@ vim ai_auto_commit/cli.py
 # Test locally
 python -m ai_auto_commit.cli
 
-# Validate packaging system
+# Validate release_packaging system
 ./scripts/validate.sh
 
 # Clean build artifacts
@@ -243,9 +243,9 @@ This will:
 All dependencies are automatically installed in a virtual environment on first run. However, you can set it up manually:
 
 ```bash
-python -m venv packaging/.venv
-packaging/.venv/bin/pip install -r packaging/requirements.txt
-packaging/.venv/bin/pip install build twine
+python -m venv release_packaging/.venv
+release_packaging/.venv/bin/pip install -r release_packaging/requirements.txt
+release_packaging/.venv/bin/pip install build twine
 ```
 
 ## Troubleshooting

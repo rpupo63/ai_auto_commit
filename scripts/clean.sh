@@ -79,23 +79,23 @@ if [ "$DEEP_CLEAN" = "--all" ]; then
     echo -e "${YELLOW}Deep cleaning...${NC}"
 
     # Remove virtual environment
-    if [ -d "packaging/.venv" ]; then
-        rm -rf packaging/.venv/
-        echo -e "${GREEN}✓${NC} Removed packaging/.venv/"
+    if [ -d "release_packaging/.venv" ]; then
+        rm -rf release_packaging/.venv/
+        echo -e "${GREEN}✓${NC} Removed release_packaging/.venv/"
     fi
 
     # Remove backups (be careful!)
-    if [ -d "packaging/backup" ]; then
-        echo -e "${YELLOW}⚠${NC} Removing packaging/backup/"
-        rm -rf packaging/backup/
-        echo -e "${GREEN}✓${NC} Removed packaging/backup/"
+    if [ -d "release_packaging/backup" ]; then
+        echo -e "${YELLOW}⚠${NC} Removing release_packaging/backup/"
+        rm -rf release_packaging/backup/
+        echo -e "${GREEN}✓${NC} Removed release_packaging/backup/"
     fi
 
     # Remove generated files (they can be regenerated)
-    if [ -d "packaging/generated" ]; then
-        echo -e "${YELLOW}⚠${NC} Removing packaging/generated/"
-        rm -rf packaging/generated/
-        echo -e "${GREEN}✓${NC} Removed packaging/generated/"
+    if [ -d "release_packaging/generated" ]; then
+        echo -e "${YELLOW}⚠${NC} Removing release_packaging/generated/"
+        rm -rf release_packaging/generated/
+        echo -e "${GREEN}✓${NC} Removed release_packaging/generated/"
     fi
 fi
 

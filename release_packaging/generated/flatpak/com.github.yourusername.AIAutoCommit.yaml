@@ -1,0 +1,58 @@
+app-id: com.github.yourusername.AIAutoCommit
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: autocommit
+finish-args:
+  - --share=network
+  - --filesystem=host
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --talk-name=org.freedesktop.secrets
+  - --filesystem=xdg-config/ai_auto_commit:create
+modules:
+  - name: python3-pip
+    buildsystem: simple
+    build-commands:
+      - pip3 install --exists-action=i --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST} pip setuptools wheel
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/p/pip/pip-23.3.1.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+
+  - name: ai-auto-commit
+    buildsystem: simple
+    build-commands:
+      - pip3 install --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST} .
+    sources:
+      - type: archive
+        url: https://files.pythonhosted.org/packages/source/a/ai-auto-commit/ai-auto-commit-0.1.1.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+
+      # Python dependencies (checksums need to be updated manually)
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/a/ai-model-picker>=0.1.0/ai-model-picker>=0.1.0-VERSION.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/l/langchain-core>=0.1.0/langchain-core>=0.1.0-VERSION.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/l/langchain-openai>=0.1.0/langchain-openai>=0.1.0-VERSION.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/l/langchain-anthropic>=0.1.0/langchain-anthropic>=0.1.0-VERSION.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/l/langchain-google-genai>=0.1.0/langchain-google-genai>=0.1.0-VERSION.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/l/langchain-mistralai>=0.1.0/langchain-mistralai>=0.1.0-VERSION.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/l/langchain-cohere>=0.1.0/langchain-cohere>=0.1.0-VERSION.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/t/tiktoken>=0.5.0/tiktoken>=0.5.0-VERSION.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256

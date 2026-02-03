@@ -145,5 +145,5 @@ git checkout main
 ## 📚 More Information
 
 - Full documentation: `scripts/README.md`
-- Packaging system: `packaging/README.md`
+- Packaging system: `release_packaging/README.md`
 - Release plan: `.claude/plans/delightful-finding-phoenix.md`

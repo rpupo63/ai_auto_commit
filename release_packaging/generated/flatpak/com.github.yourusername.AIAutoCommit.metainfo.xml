@@ -34,7 +34,7 @@
   <developer_name>Your Name</developer_name>
 
   <releases>
-    <release version="0.1.0" date="2025-12-27">
+    <release version="0.1.1" date="2025-12-27">
       <description>
         <p>Initial release with interactive setup wizard and multi-provider support.</p>
         <ul>

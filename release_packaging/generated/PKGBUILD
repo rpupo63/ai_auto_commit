@@ -1,6 +1,6 @@
 # Maintainer: Your Name <your.email@example.com>
 pkgname=ai-auto-commit
-pkgver=0.1.0
+pkgver=0.1.1
 pkgrel=1
 pkgdesc="AI-powered git commit and push tool with interactive setup"
 arch=('any')

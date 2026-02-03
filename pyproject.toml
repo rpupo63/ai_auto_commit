@@ -1,16 +1,18 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = [
+    "setuptools>=61.0",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-auto-commit"
-version = "0.1.0"
+version = "0.1.1"
 description = "AI-powered git commit and push tool with interactive setup"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    { name = "Your Name", email = "your.email@example.com" },
 ]
 keywords = [
     "git",
@@ -40,6 +42,7 @@ classifiers = [
     "Environment :: Console",
 ]
 dependencies = [
+    "ai-model-picker>=0.1.0",
     "langchain-core>=0.1.0",
     "langchain-openai>=0.1.0",
     "langchain-anthropic>=0.1.0",
@@ -48,6 +51,9 @@ dependencies = [
     "langchain-cohere>=0.1.0",
     "tiktoken>=0.5.0",
 ]
+
+[project.license]
+text = "MIT"
 
 [project.urls]
 Homepage = "https://github.com/yourusername/ai_auto_commit"
@@ -58,49 +64,25 @@ Changelog = "https://github.com/yourusername/ai_auto_commit/releases"
 [project.scripts]
 autocommit = "ai_auto_commit.cli:main"
 
-[tool.setuptools]
-packages = {find = {}}
+[tool.setuptools.packages.find]
 
 [tool.package-metadata]
-# Publisher information (for when placeholders are resolved)
 publisher = "Your Name"
 publisher_email = "your.email@example.com"
 github_username = "yourusername"
 github_repo = "ai_auto_commit"
-
-# Shared description
 short_description = "AI-powered git commit and push tool with interactive setup"
-long_description = """
-An intelligent, AI-powered git commit and push tool that automatically generates
-meaningful commit messages from your staged changes. Works with multiple AI providers
-including OpenAI, Anthropic, Google, Mistral, and Cohere.
-"""
-
-# Features (for WinGet and Flatpak)
+long_description = "An intelligent, AI-powered git commit and push tool that automatically generates\nmeaningful commit messages from your staged changes. Works with multiple AI providers\nincluding OpenAI, Anthropic, Google, Mistral, and Cohere.\n"
 features = [
     "AI-Powered Commit Messages: Automatically generates conventional commit messages",
     "Multi-Provider Support: Works with OpenAI, Anthropic, Google, Mistral, and Cohere",
     "Token Budget Management: Configurable token limits to control API costs",
     "Interactive Setup: User-friendly wizard for first-time configuration",
     "Smart Diff Analysis: Uses hierarchical analysis to understand complex changes",
-    "Safety Features: Creates backups and verifies changes before committing"
+    "Safety Features: Creates backups and verifies changes before committing",
 ]
+post_install_message = "To get started, run the interactive setup wizard:\n  autocommit init\n\nThis will guide you through:\n  • Configuring AI provider API keys\n  • Setting your default model\n  • Configuring token budget\n\nFor more information:\n  autocommit --help\n"
 
-# Unified post-install message (used across all package managers)
-post_install_message = """
-To get started, run the interactive setup wizard:
-  autocommit init
-
-This will guide you through:
-  • Configuring AI provider API keys
-  • Setting your default model
-  • Configuring token budget
-
-For more information:
-  autocommit --help
-"""
-
-# Package-specific overrides
 [tool.package-metadata.debian]
 section = "utils"
 priority = "optional"
@@ -109,23 +91,11 @@ priority = "optional"
 runtime = "org.freedesktop.Platform"
 runtime_version = "23.08"
 
-# Release notes
 [tool.package-metadata.release-notes]
-version = "0.1.0"
+version = "0.1.1"
 date = "2025-12-27"
-notes = """
-Initial release with interactive setup wizard and multi-provider support.
+notes = "Initial release with interactive setup wizard and multi-provider support.\n\n- Interactive setup wizard (autocommit init)\n- Support for 5 AI providers (OpenAI, Anthropic, Google, Mistral, Cohere)\n- Token budget management\n- Configuration stored in ~/.config/ai_auto_commit/config.json\n- Smart diff analysis\n- Safety features with backups\n"
 
-- Interactive setup wizard (autocommit init)
-- Support for 5 AI providers (OpenAI, Anthropic, Google, Mistral, Cohere)
-- Token budget management
-- Configuration stored in ~/.config/ai_auto_commit/config.json
-- Smart diff analysis
-- Safety features with backups
-"""
-
-# Checksums (auto-populated by release_mgr.py build command)
 [tool.package-metadata.checksums]
 sha256 = ""
 tarball_url = ""
-

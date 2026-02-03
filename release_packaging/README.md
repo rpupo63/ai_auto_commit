@@ -4,7 +4,7 @@ This directory contains the template-based package distribution system for `ai-a
 
 ## Overview
 
-The packaging system eliminates redundancy by:
+The release_packaging system eliminates redundancy by:
 - Using `pyproject.toml` as the **single source of truth** for all metadata
 - Generating package manifests from **Jinja2 templates**
 - Providing a Python tool (`release_mgr.py`) for **automated version bumping** and **checksum calculation**
@@ -12,7 +12,7 @@ The packaging system eliminates redundancy by:
 ## Directory Structure
 
 ```
-packaging/
+release_packaging/
 ├── __init__.py                  # Package initialization
 ├── release_mgr.py               # Release management tool (main script)
 ├── requirements.txt             # Python dependencies for tooling
@@ -55,14 +55,14 @@ packaging/
 Install Python dependencies (automatic on first use):
 
 ```bash
-python -m venv packaging/.venv
-packaging/.venv/bin/pip install -r packaging/requirements.txt
+python -m venv release_packaging/.venv
+release_packaging/.venv/bin/pip install -r release_packaging/requirements.txt
 ```
 
 Or use the tool directly (creates venv automatically):
 
 ```bash
-python -m packaging.release_mgr --help
+python -m release_packaging.release_mgr --help
 ```
 
 ### Commands
@@ -72,10 +72,10 @@ python -m packaging.release_mgr --help
 Generate all package manifests from templates:
 
 ```bash
-python -m packaging.release_mgr generate
+python -m release_packaging.release_mgr generate
 ```
 
-This reads metadata from `pyproject.toml` and renders all templates in `packaging/templates/` to `packaging/generated/`.
+This reads metadata from `pyproject.toml` and renders all templates in `release_packaging/templates/` to `release_packaging/generated/`.
 
 #### Bump Version
 
@@ -83,13 +83,13 @@ Bump the version using semantic versioning:
 
 ```bash
 # Bump patch version: 0.1.0 → 0.1.1
-python -m packaging.release_mgr bump patch
+python -m release_packaging.release_mgr bump patch
 
 # Bump minor version: 0.1.0 → 0.2.0
-python -m packaging.release_mgr bump minor
+python -m release_packaging.release_mgr bump minor
 
 # Bump major version: 0.1.0 → 1.0.0
-python -m packaging.release_mgr bump major
+python -m release_packaging.release_mgr bump major
 ```
 
 This will:
@@ -102,7 +102,7 @@ This will:
 Build the Python package and automatically calculate SHA256 checksums:
 
 ```bash
-python -m packaging.release_mgr build
+python -m release_packaging.release_mgr build
 ```
 
 This will:
@@ -116,7 +116,7 @@ This will:
 Validate that all expected manifest files exist:
 
 ```bash
-python -m packaging.release_mgr validate
+python -m release_packaging.release_mgr validate
 ```
 
 ## Metadata Configuration
@@ -221,12 +221,12 @@ sha256sums=('{{ metadata.checksums.sha256 or "SKIP" }}')
 
 2. **Bump version**:
    ```bash
-   python -m packaging.release_mgr bump minor
+   python -m release_packaging.release_mgr bump minor
    ```
 
 3. **Build package and calculate checksums**:
    ```bash
-   python -m packaging.release_mgr build
+   python -m release_packaging.release_mgr build
    ```
 
 4. **Review changes**:
@@ -254,7 +254,7 @@ Make sure you're running from the project root directory:
 
 ```bash
 cd /path/to/ai_auto_commit
-python -m packaging.release_mgr generate
+python -m release_packaging.release_mgr generate
 ```
 
 ### "Module not found" error
@@ -262,9 +262,9 @@ python -m packaging.release_mgr generate
 Install dependencies in a virtual environment:
 
 ```bash
-python -m venv packaging/.venv
-packaging/.venv/bin/pip install -r packaging/requirements.txt
-packaging/.venv/bin/python -m packaging.release_mgr generate
+python -m venv release_packaging/.venv
+release_packaging/.venv/bin/pip install -r release_packaging/requirements.txt
+release_packaging/.venv/bin/python -m release_packaging.release_mgr generate
 ```
 
 ### Generated files differ from originals
@@ -274,16 +274,16 @@ This is expected! The generated files use the unified metadata from `pyproject.t
 To restore original files if needed:
 
 ```bash
-cp -r packaging/backup/* .
+cp -r release_packaging/backup/* .
 ```
 
 ## Maintenance
 
 ### Adding a New Package Manager
 
-1. Create a new template in `packaging/templates/`
+1. Create a new template in `release_packaging/templates/`
 2. Add the template mapping to `release_mgr.py` in the `manifest_map` dictionary
-3. Regenerate: `python -m packaging.release_mgr generate`
+3. Regenerate: `python -m release_packaging.release_mgr generate`
 
 ### Updating Metadata
 
@@ -294,15 +294,15 @@ Edit `pyproject.toml` and regenerate:
 vim pyproject.toml
 
 # Regenerate all manifests
-python -m packaging.release_mgr generate
+python -m release_packaging.release_mgr generate
 ```
 
 ### Updating Templates
 
-1. Edit templates in `packaging/templates/`
+1. Edit templates in `release_packaging/templates/`
 2. Regenerate to apply changes:
    ```bash
-   python -m packaging.release_mgr generate
+   python -m release_packaging.release_mgr generate
    ```
 3. Review the diff:
    ```bash
@@ -358,7 +358,7 @@ python -m packaging.release_mgr generate
                   ▼
 ┌─────────────────────────────────────────┐
 │      Generated Manifests                │
-│  - packaging/generated/                 │
+│  - release_packaging/generated/                 │
 │    ├── PKGBUILD                         │
 │    ├── Formula/ai-auto-commit.rb        │
 │    ├── chocolatey/                      │
@@ -368,4 +368,4 @@ python -m packaging.release_mgr generate
 
 ## License
 
-This packaging system is part of ai-auto-commit and is licensed under the same license (MIT).
+This release_packaging system is part of ai-auto-commit and is licensed under the same license (MIT).
