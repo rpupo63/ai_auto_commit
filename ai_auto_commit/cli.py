@@ -300,6 +300,14 @@ Note: Run 'autocommit init' for first-time setup.
         help="Set the default model to use and exit. Example: --set-default-model gpt-4o"
     )
     
+    parser.add_argument(
+        "--auto-recover",
+        action="store_true",
+        default=False,
+        help="Automatically attempt to recover from push failures (e.g., by rebasing "
+             "when remote has new commits). Default: prompt user for confirmation."
+    )
+    
     args = parser.parse_args()
 
     # Handle init subcommand
@@ -439,6 +447,7 @@ Note: Run 'autocommit init' for first-time setup.
             model=args.model,
             temperature=args.temperature,
             remote=args.remote,
+            auto_recover_push=args.auto_recover,
         )
         
         print("\n" + "=" * 60)
@@ -450,6 +459,7 @@ Note: Run 'autocommit init' for first-time setup.
         print("\n\n⚠️  Operation cancelled by user.")
         sys.exit(1)
     except Exception as e:
+        # GitPushError and other errors already print detailed diagnostics
         print(f"\n❌ Error: {e}")
         sys.exit(1)
 

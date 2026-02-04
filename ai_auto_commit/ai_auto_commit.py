@@ -15,10 +15,12 @@ try:
     from .cli import prompt_for_commit_comment
     from .commit_generation import smart_hierarchical_commit_message
     from .git_operations import (
+        GitPushError,
         clear_git_cache,
         get_target_directory,
         has_changes,
         has_unpushed_commits,
+        push_with_recovery,
         run_git_command,
         run_git_command_output,
         show_changes_summary,
@@ -45,10 +47,12 @@ except ImportError:
     from cli import prompt_for_commit_comment
     from commit_generation import smart_hierarchical_commit_message
     from git_operations import (
+        GitPushError,
         clear_git_cache,
         get_target_directory,
         has_changes,
         has_unpushed_commits,
+        push_with_recovery,
         run_git_command,
         run_git_command_output,
         show_changes_summary,
@@ -77,6 +81,7 @@ def auto_commit_and_push(
     temperature: float = 0.2,
     remote: str = "origin",
     large_diff_strategy: Optional[Literal["split", "truncate", "cancel"]] = None,
+    auto_recover_push: bool = False,
 ) -> str:
     """
     Generate a commit message from already staged files, commit, and push.
@@ -96,6 +101,9 @@ def auto_commit_and_push(
         How to handle diffs that exceed the token limit: 'split' (split and
         summarize recursively), 'truncate' (cut to limit), or 'cancel'. If None,
         the user is prompted when a large diff is detected.
+    auto_recover_push : bool
+        If True, automatically attempt to recover from push failures (e.g., by
+        rebasing) without prompting. Default is False (prompt user).
 
     Returns
     -------
@@ -108,6 +116,8 @@ def auto_commit_and_push(
         If the API key is not initialized, or no files are staged.
     subprocess.CalledProcessError
         Propagates if any git command fails.
+    GitPushError
+        If push fails and recovery is not possible or declined.
     """
 
     # ── Get the target directory ───────────────────────────────────────
@@ -138,7 +148,10 @@ def auto_commit_and_push(
         branch = run_git_command_output(
             target_dir, "rev-parse", "--abbrev-ref", "HEAD"
         ).strip()
-        run_git_command(target_dir, "push", remote, branch)
+        push_with_recovery(
+            target_dir, remote, branch,
+            auto_recover=auto_recover_push,
+        )
         return "Pushed existing commits"
 
     # ── Show changes summary ─────────────────────────────────────────────
@@ -285,7 +298,10 @@ def auto_commit_and_push(
     branch = run_git_command_output(
         target_dir, "rev-parse", "--abbrev-ref", "HEAD"
     ).strip()
-    run_git_command(target_dir, "push", remote, branch)
+    push_with_recovery(
+        target_dir, remote, branch,
+        auto_recover=auto_recover_push,
+    )
 
     # ── 7. Final safety verification ─────────────────────────────────────
     print("\nPerforming final safety verification...")
@@ -374,6 +390,14 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
              "'truncate' (cut to limit), or 'cancel'. Default: prompt interactively."
     )
     
+    parser.add_argument(
+        "--auto-recover",
+        action="store_true",
+        default=False,
+        help="Automatically attempt to recover from push failures (e.g., by rebasing "
+             "when remote has new commits). Default: prompt user for confirmation."
+    )
+    
     args = parser.parse_args()
     
     # Handle --set-default-model flag (exit early if set)
@@ -415,6 +439,7 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
             temperature=args.temperature,
             remote=args.remote,
             large_diff_strategy=args.large_diff,
+            auto_recover_push=args.auto_recover,
         )
         
         print("\n" + "=" * 60)
@@ -424,6 +449,10 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
         
     except KeyboardInterrupt:
         print("\n\n⚠️  Operation cancelled by user.")
+        sys.exit(1)
+    except GitPushError as e:
+        # GitPushError already printed detailed diagnostics
+        print(f"\n❌ Push failed: {e}")
         sys.exit(1)
     except Exception as e:
         print(f"\n❌ Error: {e}")
