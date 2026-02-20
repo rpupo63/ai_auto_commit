@@ -97,8 +97,11 @@ celerybeat.pid
 
 # Environments
 .env
+*/.env
 .venv
+*/.venv
 env/
+*/venv/
 venv/
 ENV/
 env.bak/
@@ -137,6 +140,15 @@ Thumbs.db
 *.tar.gz
 pkg/
 src/
+
+# Generated Files / Temporary
+*.db
+pip-cache/
+npm-debug.log
+
+# Pacman packaging
+*.pkg.tar.zst
+*.pkg.tar.xz
 
 # Packaging system
 release_packaging/.venv/

@@ -1,0 +1,9 @@
+pytest
+langchain_core
+langchain_openai
+langchain_anthropic
+langchain_google_genai
+langchain_mistralai
+langchain_cohere
+ai_model_picker
+InquirerPy

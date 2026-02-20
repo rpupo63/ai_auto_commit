@@ -1,0 +1,12 @@
+The `makepkg -si` command has successfully rebuilt and reinstalled the `ai-auto-commit` package. The build output confirms that `python-dotenv` was collected and installed during the process:
+
+```
+Collecting python-dotenv>=1.0.0
+Using cached python_dotenv-1.2.1-py3-none-any.whl.metadata (25 kB)
+...
+Successfully installed ... python-dotenv-1.2.1 ...
+```
+
+This indicates that the `ModuleNotFoundError: No module named 'dotenv'` should now be resolved.
+
+Please try running `autocommit` again to confirm the fix.

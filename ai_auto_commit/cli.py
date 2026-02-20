@@ -5,11 +5,10 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Import git_operations - handle both package and direct script execution
-try:
-    from .git_operations import run_git_command_output
-except ImportError:
-    from git_operations import run_git_command_output
+from InquirerPy import inquirer
+from InquirerPy.base.control import Choice
+
+from ai_auto_commit.git_operations import run_git_command_output
 
 
 def prompt_for_files(target_dir: Path) -> str:
@@ -37,7 +36,7 @@ def prompt_for_files(target_dir: Path) -> str:
     print("  - 'src/' for a directory")
     print("  - '*.py' for all Python files")
     
-    user_input = input("\nFiles to commit [default: '.']: ").strip()
+    user_input = inquirer.text(message="Files to commit:", default=".").execute().strip()
     
     if not user_input or user_input == '.':
         return '.'
@@ -48,7 +47,7 @@ def prompt_for_files(target_dir: Path) -> str:
 def prompt_for_model() -> str:
     """Prompt user for model selection using model_picker's interactive selector."""
     try:
-        from .models import get_default_model
+        from ai_auto_commit.models import get_default_model
     except ImportError:
         from models import get_default_model
 
@@ -70,7 +69,7 @@ def prompt_for_model() -> str:
     return get_default_model()
 
 
-def prompt_for_commit_comment(commit_msg: str) -> str:
+def prompt_for_commit_comment(commit_msg: str, non_interactive: bool = False) -> str:
     """
     Prompt user for optional comment to add to the commit message.
     
@@ -78,6 +77,8 @@ def prompt_for_commit_comment(commit_msg: str) -> str:
     ----------
     commit_msg : str
         The AI-generated commit message.
+    non_interactive : bool
+        If True, do not prompt for user input.
     
     Returns
     -------
@@ -89,12 +90,15 @@ def prompt_for_commit_comment(commit_msg: str) -> str:
     print("=" * 60)
     print(commit_msg)
     print("=" * 60)
+
+    if non_interactive:
+        return commit_msg
     
     print("\nYou can add a comment to the top of this commit message.")
     print("This is useful for adding context, notes, or special instructions.")
     print("Press Enter to proceed with the message as-is, or type a comment.")
     
-    user_comment = input("\nEnter comment (or press Enter to skip): ").strip()
+    user_comment = inquirer.text(message="Enter comment (or press Enter to skip):").execute().strip()
     
     if user_comment:
         # Add the user comment to the top of the commit message
@@ -115,43 +119,35 @@ def confirm_commit_and_push(
     print(f"\nRepository path: {target_dir}")
     print(f"Commit message: {commit_msg}")
     
-    while True:
-        response = input(
-            "\nIs this git commit and path correct? (Y/n/c for manual comment): "
-        ).strip().lower()
-        if response in ['y', 'yes', '']:  # Empty string means default (yes)
-            return True, commit_msg
-        elif response in ['n', 'no']:
-            return False, commit_msg
-        elif response in ['c', 'comment']:
-            print("\n📝 Manual Comment Mode:")
-            print("Your comment will be added to the TOP of the commit message.")
-            print(
-                "This is useful for adding context, notes, or special instructions."
-            )
-            manual_comment = input("\nEnter your manual comment: ").strip()
-            if manual_comment:
-                # Add the manual comment to the top of the commit message
-                enhanced_commit_msg = f"{manual_comment}\n\n{commit_msg}"
-                print(f"\n📋 Enhanced commit message:")
-                print("=" * 50)
-                print(enhanced_commit_msg)
-                print("=" * 50)
-                
-                # Ask for final confirmation
-                final_response = input(
-                    "\nProceed with this enhanced commit message? (Y/n): "
-                ).strip().lower()
-                if final_response in ['y', 'yes', '']:
-                    return True, enhanced_commit_msg
-                elif final_response in ['n', 'no']:
-                    return False, enhanced_commit_msg
-                else:
-                    print("Please enter 'y' or 'n'.")
-            else:
-                print("No comment provided. Please enter 'y', 'n', or 'c'.")
+    action = inquirer.select(
+        message="Is this git commit and path correct?",
+        choices=[
+            Choice(value="yes", name="Yes - commit and push"),
+            Choice(value="comment", name="Add a comment first"),
+            Choice(value="no", name="No - cancel"),
+        ],
+    ).execute()
+
+    if action == "yes":
+        return True, commit_msg
+    elif action == "no":
+        return False, commit_msg
+    else:
+        # comment
+        manual_comment = inquirer.text(message="Enter your manual comment:").execute().strip()
+        if manual_comment:
+            enhanced_commit_msg = f"{manual_comment}\n\n{commit_msg}"
+            print(f"\n📋 Enhanced commit message:")
+            print("=" * 50)
+            print(enhanced_commit_msg)
+            print("=" * 50)
+
+            proceed = inquirer.confirm(
+                message="Proceed with this enhanced commit message?", default=True
+            ).execute()
+            return proceed, enhanced_commit_msg
         else:
-            print("Please enter 'y', 'n', or 'c' for manual comment.")
+            return True, commit_msg
 
 
 def main() -> None:
@@ -160,30 +156,17 @@ def main() -> None:
     import os
     import subprocess
     # Import here to avoid circular imports
-    try:
-        from .ai_auto_commit import auto_commit_and_push
-        from .api_client import init
-        from .models import (
-            get_config,
-            get_config_path,
-            get_default_model,
-            get_model_config,
-            get_token_budget,
-            set_default_model,
-            set_token_budget,
-        )
-    except ImportError:
-        from ai_auto_commit import auto_commit_and_push
-        from api_client import init
-        from models import (
-            get_config,
-            get_config_path,
-            get_default_model,
-            get_model_config,
-            get_token_budget,
-            set_default_model,
-            set_token_budget,
-        )
+    from ai_auto_commit.ai_auto_commit import auto_commit_and_push
+    from ai_auto_commit.api_client import init
+    from ai_auto_commit.models import (
+        get_config,
+        get_config_path,
+        get_default_model,
+        get_model_config,
+        get_token_budget,
+        set_default_model,
+        set_token_budget,
+    )
     
     parser = argparse.ArgumentParser(
         description="AI-powered git commit and push tool with interactive prompts",
@@ -257,10 +240,7 @@ Note: Run 'autocommit init' for first-time setup.
     )
     
     # Provider choices from model_picker (same as provider_models.json)
-    try:
-        from .models import get_all_providers
-    except ImportError:
-        from models import get_all_providers
+    from ai_auto_commit.models import get_all_providers
     _provider_choices = get_all_providers()
     parser.add_argument(
         "--provider",
@@ -307,18 +287,21 @@ Note: Run 'autocommit init' for first-time setup.
         help="Automatically attempt to recover from push failures (e.g., by rebasing "
              "when remote has new commits). Default: prompt user for confirmation."
     )
+
+    parser.add_argument(
+        "--non-interactive",
+        action="store_true",
+        default=False,
+        help="Run in non-interactive mode. Do not prompt for user input."
+    )
     
     args = parser.parse_args()
 
     # Handle init subcommand
     if args.command == "init":
-        try:
-            from .setup import setup_wizard
-        except ImportError:
-            from setup import setup_wizard
+        from ai_auto_commit.setup import setup_wizard
         setup_wizard()
         return
-
     # Handle config subcommand
     if args.command == "config":
         if args.config_action == "get":
@@ -432,11 +415,7 @@ Note: Run 'autocommit init' for first-time setup.
         print("=" * 60)
         
         # Initialize API key
-        try:
-            from .api_client import init
-        except ImportError:
-            from api_client import init
-
+        from ai_auto_commit.api_client import init
         if args.api_key:
             init(api_key=args.api_key, provider=args.provider)
         else:
@@ -448,6 +427,7 @@ Note: Run 'autocommit init' for first-time setup.
             temperature=args.temperature,
             remote=args.remote,
             auto_recover_push=args.auto_recover,
+            non_interactive=args.non_interactive,
         )
         
         print("\n" + "=" * 60)

@@ -49,7 +49,6 @@ MODEL_CONTEXT_LIMITS = {
     "gemini-1.5-pro": 1_000_000,
     "gemini-1.5-flash": 1_000_000,
     "gemini-2.0-flash": 1_000_000,
-    "gemini-3-flash": 1_000_000,
     "gemini-3-flash-preview": 1_000_000,
     # Mistral models
     "mistral-large": 128_000,

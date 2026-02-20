@@ -1,0 +1,23 @@
+post_install() {
+    echo ""
+    echo "==================================================================="
+    echo "  AI Auto Commit has been installed!"
+    echo "==================================================================="
+    echo ""
+    echo "  To get started, run the interactive setup wizard:"
+    echo "    autocommit init"
+    echo ""
+    echo "  This will guide you through:"
+    echo "    - Configuring AI provider API keys"
+    echo "    - Setting your default model"
+    echo "    - Configuring token budget"
+    echo ""
+    echo "  For more information:"
+    echo "    autocommit --help"
+    echo "==================================================================="
+    echo ""
+}
+
+post_upgrade() {
+    post_install
+}

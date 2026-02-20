@@ -8,71 +8,36 @@ import subprocess
 from pathlib import Path
 from typing import List, Literal, Optional
 
-# Import modules - handle both package and direct script execution
-try:
-    # Try relative imports first (when used as a package)
-    from .api_client import ensure_initialized, init
-    from .cli import prompt_for_commit_comment
-    from .commit_generation import smart_hierarchical_commit_message
-    from .git_operations import (
-        GitPushError,
-        clear_git_cache,
-        get_target_directory,
-        has_changes,
-        has_unpushed_commits,
-        push_with_recovery,
-        run_git_command,
-        run_git_command_output,
-        show_changes_summary,
-    )
-    from .git_safety import (
-        cleanup_backup,
-        create_safety_backup,
-        verify_no_files_deleted,
-        verify_working_directory_safety,
-    )
-    from .heuristic_commits import (
-        build_heuristic_bullets,
-        compose_commit_from_bullets,
-        parse_name_status,
-        parse_numstat,
-    )
-    from .large_diff_handler import handle_large_diff
-    from .token_budget import get_max_token_budget, get_tokens_spent, reset_token_budget
-    from .token_utils import token_len
-    from .models import get_default_model
-except ImportError:
-    # Fall back to absolute imports (when running as a script)
-    from api_client import ensure_initialized, init
-    from cli import prompt_for_commit_comment
-    from commit_generation import smart_hierarchical_commit_message
-    from git_operations import (
-        GitPushError,
-        clear_git_cache,
-        get_target_directory,
-        has_changes,
-        has_unpushed_commits,
-        push_with_recovery,
-        run_git_command,
-        run_git_command_output,
-        show_changes_summary,
-    )
-    from git_safety import (
-        cleanup_backup,
-        create_safety_backup,
-        verify_no_files_deleted,
-        verify_working_directory_safety,
-    )
-    from heuristic_commits import (
-        build_heuristic_bullets,
-        compose_commit_from_bullets,
-        parse_name_status,
-        parse_numstat,
-    )
-    from large_diff_handler import handle_large_diff
-    from token_budget import get_max_token_budget, get_tokens_spent, reset_token_budget
-    from token_utils import token_len
-    from models import get_default_model
+from ai_auto_commit.api_client import ensure_initialized, init
+from ai_auto_commit.cli import prompt_for_commit_comment
+from ai_auto_commit.commit_generation import smart_hierarchical_commit_message
+from ai_auto_commit.git_operations import (
+    GitPushError,
+    clear_git_cache,
+    get_target_directory,
+    has_changes,
+    has_unpushed_commits,
+    push_with_recovery,
+    run_git_command,
+    run_git_command_output,
+    show_changes_summary,
+)
+from ai_auto_commit.git_safety import (
+    cleanup_backup,
+    create_safety_backup,
+    verify_no_files_deleted,
+    verify_working_directory_safety,
+)
+from ai_auto_commit.heuristic_commits import (
+    build_heuristic_bullets,
+    compose_commit_from_bullets,
+    parse_name_status,
+    parse_numstat,
+)
+from ai_auto_commit.large_diff_handler import handle_large_diff
+from ai_auto_commit.token_budget import get_max_token_budget, get_tokens_spent, reset_token_budget
+from ai_auto_commit.token_utils import token_len
+from ai_auto_commit.models import get_default_model
 
 
 def auto_commit_and_push(
@@ -82,6 +47,7 @@ def auto_commit_and_push(
     remote: str = "origin",
     large_diff_strategy: Optional[Literal["split", "truncate", "cancel"]] = None,
     auto_recover_push: bool = False,
+    non_interactive: bool = False,
 ) -> str:
     """
     Generate a commit message from already staged files, commit, and push.
@@ -288,7 +254,7 @@ def auto_commit_and_push(
     print(f"Final token usage: {get_tokens_spent():,}/{get_max_token_budget():,} tokens")
 
     # ── 4. Ask for user comment on commit message ───────────────────────
-    final_commit_msg = prompt_for_commit_comment(commit_msg)
+    final_commit_msg = prompt_for_commit_comment(commit_msg, non_interactive)
 
     # ── 5. Commit ───────────────────────────────────────────────────────
     run_git_command(target_dir, "commit", "-m", final_commit_msg)
@@ -397,6 +363,13 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
         help="Automatically attempt to recover from push failures (e.g., by rebasing "
              "when remote has new commits). Default: prompt user for confirmation."
     )
+
+    parser.add_argument(
+        "--non-interactive",
+        action="store_true",
+        default=False,
+        help="Run in non-interactive mode. Do not prompt for user input."
+    )
     
     args = parser.parse_args()
     
@@ -440,6 +413,7 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
             remote=args.remote,
             large_diff_strategy=args.large_diff,
             auto_recover_push=args.auto_recover,
+            non_interactive=args.non_interactive,
         )
         
         print("\n" + "=" * 60)

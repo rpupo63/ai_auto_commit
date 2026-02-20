@@ -1,0 +1,9 @@
+
+# Virtual environment
+.venv/
+
+# Test data
+tests/AppFlowy/
+
+# Environment variables
+.env

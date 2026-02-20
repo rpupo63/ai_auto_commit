@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 import socket
+from dotenv import load_dotenv # New import
+
+# Load environment variables from .env file when the module is imported
+load_dotenv() # Moved here from init()
 
 from .llm_client import initialize_provider
 from .models import Provider, get_all_providers, get_api_key
@@ -15,23 +19,6 @@ def init(
 ) -> None:
     """
     Initialize AI provider API keys.
-
-    Parameters
-    ----------
-    api_key : str, optional
-        API key for the specified provider. If not provided, will attempt
-        to load from config file.
-    provider : Provider, optional
-        Provider to initialize (default: "openai"). Can be one of:
-        "openai", "anthropic", "google", "mistral", "cohere"
-    **kwargs : str
-        Additional provider API keys. Keys should be provider names,
-        values should be API keys. Example: init(anthropic="key...", google="key...")
-
-    Raises
-    ------
-    RuntimeError
-        If API key is not provided and not found in config file.
     """
     from .models import get_all_api_keys
 
