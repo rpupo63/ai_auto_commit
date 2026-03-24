@@ -1,15 +1,17 @@
 # Maintainer: Beto
 pkgname=ai-auto-commit
 pkgver=0.1.1
-pkgrel=1
+pkgrel=4
 pkgdesc="AI-powered git commit and push tool with interactive setup"
-arch=('any')
+# Vendored wheels include native extensions (e.g. pydantic-core); not a noarch bundle.
+arch=('x86_64' 'aarch64')
 url="https://github.com/yourusername/ai_auto_commit"
 license=('MIT')
 depends=('python' 'git')
 makedepends=('python-build' 'python-installer' 'python-wheel' 'python-setuptools' 'python-pip')
 install=ai-auto-commit.install
-options=('!debug')
+# Stripping breaks Python extension modules (.so), causing ImportError for e.g. pydantic_core._pydantic_core
+options=('!strip' '!debug')
 source=()
 sha256sums=()
 
@@ -29,6 +31,7 @@ package() {
     cd "$startdir"
 
     _lib="/usr/lib/ai-auto-commit"
+    export PIP_ROOT_USER_ACTION=ignore
 
     # Install the wheel (no deps, just the package itself)
     pip install --isolated --ignore-installed --no-deps --no-warn-script-location \
@@ -40,9 +43,11 @@ package() {
         --target="$pkgdir/$_lib" \
         "$_model_picker_dir"/dist/*.whl
 
-    # Install all remaining dependencies into the private directory
+    # One dependency pass with --upgrade so overlapping packages merge cleanly (avoids
+    # "Target directory already exists" / half-applied pydantic reinstalls).
     pip install --isolated --ignore-installed --no-warn-script-location \
         --target="$pkgdir/$_lib" \
+        --upgrade \
         "langchain-core>=1.0.0" \
         "langchain-openai>=1.0.0" \
         "langchain-anthropic>=1.0.0" \
@@ -51,12 +56,16 @@ package() {
         "langchain-mistralai>=1.0.0" \
         "langchain-cohere>=0.4.0" \
         "tiktoken>=0.5.0" \
-        "python-dotenv>=1.0.0"
+        "python-dotenv>=1.0.0" \
+        "InquirerPy>=0.3.0" \
+        "pydantic>=2.0.0" \
+        "pydantic-core>=2.0.0"
 
-    # Create wrapper script that sets the private lib on PYTHONPATH
+    # Use Arch's interpreter explicitly: #!/usr/bin/env python3 respects PATH and can
+    # pick pyenv/asdf/venv (wrong ABI for vendored cp3XX wheels → pydantic_core errors).
     install -d "$pkgdir/usr/bin"
     cat > "$pkgdir/usr/bin/autocommit" << 'EOF'
-#!/usr/bin/env python3
+#!/usr/bin/python3
 import sys
 sys.path.insert(0, '/usr/lib/ai-auto-commit')
 from ai_auto_commit.cli import main

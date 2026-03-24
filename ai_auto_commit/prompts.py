@@ -3,6 +3,8 @@
 import textwrap
 from typing import Final
 
+from ai_auto_commit.models import ensure_commit_prompt_template
+
 PROMPT_HEADER: Final[str] = textwrap.dedent(
     """\
     Your task is to help the user to generate a commit message and commit the changes using git.
@@ -68,4 +70,11 @@ PROMPT_HEADER: Final[str] = textwrap.dedent(
     Below is the **staged diff**. Generate a commit message following the rules above:
     """
 )
+
+
+def get_commit_prompt_header() -> str:
+    """
+    Return effective prompt header and persist default into config when missing.
+    """
+    return ensure_commit_prompt_template(PROMPT_HEADER)
 

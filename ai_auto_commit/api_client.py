@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import socket
-from dotenv import load_dotenv # New import
+from pathlib import Path
 
-# Load environment variables from .env file when the module is imported
-load_dotenv() # Moved here from init()
+from dotenv import load_dotenv
+
+# Load secrets from ~/.env first so the tool works outside any single project directory;
+# then .env from cwd (and parents via find_dotenv) overrides for per-repo values.
+load_dotenv(Path.home() / ".env")
+load_dotenv(override=True)
 
 from .llm_client import initialize_provider
 from .models import Provider, get_all_providers, get_api_key

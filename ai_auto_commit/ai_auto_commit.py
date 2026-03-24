@@ -45,6 +45,7 @@ def auto_commit_and_push(
     model: Optional[str] = None,
     temperature: float = 0.2,
     remote: str = "origin",
+    repo: Optional[Path] = None,
     large_diff_strategy: Optional[Literal["split", "truncate", "cancel"]] = None,
     auto_recover_push: bool = False,
     non_interactive: bool = False,
@@ -63,6 +64,9 @@ def auto_commit_and_push(
         Sampling temperature for the completion.
     remote : str
         Git remote to push to (default 'origin').
+    repo : Path, optional
+        Directory to treat as the starting point for finding the git root (like ``git -C``).
+        Default: current working directory.
     large_diff_strategy : str, optional
         How to handle diffs that exceed the token limit: 'split' (split and
         summarize recursively), 'truncate' (cut to limit), or 'cancel'. If None,
@@ -87,7 +91,7 @@ def auto_commit_and_push(
     """
 
     # ── Get the target directory ───────────────────────────────────────
-    target_dir = get_target_directory()
+    target_dir = get_target_directory(repo)
     print(f"Operating on repository: {target_dir}")
     
     # ── Use default model (no prompting) ───────────────────────────────
@@ -294,6 +298,7 @@ def main() -> None:
         epilog="""
 Examples:
   %(prog)s                          # Generate commit from staged files
+  %(prog)s -C ~/src/my-app          # Use repo at ~/src/my-app (shell cwd may be elsewhere)
   %(prog)s --model gpt-4o           # Use GPT-4o model (instead of default)
   %(prog)s --set-default-model gpt-4o  # Set default model for future runs
 
@@ -336,6 +341,15 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
         type=str,
         default="origin",
         help="Git remote to push to (default: %(default)s)"
+    )
+
+    parser.add_argument(
+        "-C",
+        "--repo",
+        type=Path,
+        default=None,
+        metavar="PATH",
+        help="Starting directory for finding the git repo (like git -C).",
     )
     
     parser.add_argument(
@@ -411,6 +425,7 @@ Note: Files must be staged first using 'git add <files>' or 'git add .' before r
             model=args.model,
             temperature=args.temperature,
             remote=args.remote,
+            repo=args.repo,
             large_diff_strategy=args.large_diff,
             auto_recover_push=args.auto_recover,
             non_interactive=args.non_interactive,

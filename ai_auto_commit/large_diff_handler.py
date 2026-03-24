@@ -14,13 +14,13 @@ from typing import List, Literal, Optional
 try:
     from .commit_generation import split_diff_by_file
     from .llm_client import invoke_llm, get_token_usage
-    from .prompts import PROMPT_HEADER
+    from .prompts import get_commit_prompt_header
     from .token_budget import get_tokens_spent, get_max_token_budget, refund_tokens, try_reserve_tokens, reserve_tokens_soft, is_over_budget
     from .token_utils import token_len
 except ImportError:
     from commit_generation import split_diff_by_file
     from llm_client import invoke_llm, get_token_usage
-    from prompts import PROMPT_HEADER
+    from prompts import get_commit_prompt_header
     from token_budget import get_tokens_spent, get_max_token_budget, refund_tokens, try_reserve_tokens, reserve_tokens_soft, is_over_budget
     from token_utils import token_len
 
@@ -184,7 +184,7 @@ def check_diff_exceeds_limit(diff: str, model_name: str) -> tuple[bool, int, int
     effective_limit = get_effective_token_limit(model_name)
 
     # Account for prompt header
-    prompt_overhead = token_len(PROMPT_HEADER) + 100  # Extra buffer
+    prompt_overhead = token_len(get_commit_prompt_header()) + 100  # Extra buffer
     available_for_diff = effective_limit - prompt_overhead
 
     return diff_tokens > available_for_diff, diff_tokens, available_for_diff
@@ -549,8 +549,9 @@ def generate_final_commit_from_summaries(
         The final commit message.
     """
     est_completion = 256
+    prompt_header = get_commit_prompt_header()
     header = (
-        PROMPT_HEADER
+        prompt_header
         + "\nBelow are summaries of all changes in this commit. "
         "Write the final Conventional Commit message:\n\n"
     )

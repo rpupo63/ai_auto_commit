@@ -14,6 +14,9 @@ post_install() {
     echo ""
     echo "  For more information:"
     echo "    autocommit --help"
+    echo ""
+    echo "  Uses /usr/bin/python3 (not the first python3 on PATH). Rebuild this"
+    echo "  package after a system Python upgrade if imports fail."
     echo "==================================================================="
     echo ""
 }

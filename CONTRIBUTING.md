@@ -41,7 +41,7 @@ ai_auto_commit/
 ├── ai_auto_commit/           # Main Python package
 │   ├── __init__.py
 │   ├── cli.py                # CLI interface and argument parsing
-│   ├── setup.py              # Interactive setup wizard
+│   ├── setup_wizard.py       # Interactive setup wizard (autocommit init)
 │   ├── models.py             # Model configurations and config management
 │   ├── api_client.py         # API client initialization
 │   ├── llm_client.py         # LLM provider implementations
@@ -149,7 +149,7 @@ To add support for a new AI provider:
            pass
    ```
 
-4. **Update setup wizard** in `setup.py` to prompt for the new provider's API key
+4. **Update setup wizard** in `setup_wizard.py` to prompt for the new provider's API key
 
 ### Version Management
 
@@ -347,7 +347,7 @@ Replace placeholder values:
 ## Key Files to Know
 
 - **cli.py** - Entry point, argument parsing, commands
-- **setup.py** - Interactive setup wizard
+- **setup_wizard.py** - Interactive setup wizard
 - **models.py** - Configuration management, API key storage
 - **api_client.py** - Provider initialization
 - **commit_generation.py** - Core commit message logic

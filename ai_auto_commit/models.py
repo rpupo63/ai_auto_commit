@@ -209,3 +209,71 @@ def get_token_budget() -> int:
     """
     config = _load_local_config()
     return config.get("token_budget", 250_000)
+
+
+def set_commit_prompt_template(prompt_template: str) -> None:
+    """
+    Set a custom prompt template used for commit message generation.
+
+    Parameters
+    ----------
+    prompt_template : str
+        Custom prompt template text. Must be a non-empty string.
+
+    Raises
+    ------
+    ValueError
+        If prompt_template is not a non-empty string.
+    """
+    if not isinstance(prompt_template, str) or not prompt_template.strip():
+        raise ValueError("Commit prompt template must be a non-empty string")
+
+    config = _load_local_config()
+    config["commit_prompt_template"] = prompt_template
+    _save_local_config(config)
+
+
+def get_commit_prompt_template() -> Optional[str]:
+    """
+    Get the custom commit prompt template if configured.
+
+    Returns
+    -------
+    Optional[str]
+        The configured prompt template, or None if not set.
+    """
+    config = _load_local_config()
+    value = config.get("commit_prompt_template")
+    if isinstance(value, str) and value.strip():
+        return value
+    return None
+
+
+def ensure_commit_prompt_template(default_prompt_template: str) -> str:
+    """
+    Ensure commit_prompt_template exists in config and return effective value.
+
+    If no valid template is present, persists the provided default prompt into
+    config so users can see and edit it explicitly.
+
+    Parameters
+    ----------
+    default_prompt_template : str
+        Built-in default prompt template.
+
+    Returns
+    -------
+    str
+        Effective commit prompt template from config.
+    """
+    if not isinstance(default_prompt_template, str) or not default_prompt_template.strip():
+        raise ValueError("Default commit prompt template must be a non-empty string")
+
+    config = _load_local_config()
+    value = config.get("commit_prompt_template")
+    if isinstance(value, str) and value.strip():
+        return value
+
+    config["commit_prompt_template"] = default_prompt_template
+    _save_local_config(config)
+    return default_prompt_template

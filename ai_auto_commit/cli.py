@@ -159,14 +159,17 @@ def main() -> None:
     from ai_auto_commit.ai_auto_commit import auto_commit_and_push
     from ai_auto_commit.api_client import init
     from ai_auto_commit.models import (
+        ensure_commit_prompt_template,
         get_config,
         get_config_path,
         get_default_model,
         get_model_config,
         get_token_budget,
+        set_commit_prompt_template,
         set_default_model,
         set_token_budget,
     )
+    from ai_auto_commit.prompts import PROMPT_HEADER
     
     parser = argparse.ArgumentParser(
         description="AI-powered git commit and push tool with interactive prompts",
@@ -175,9 +178,11 @@ def main() -> None:
 Examples:
   %(prog)s init                     # Run interactive setup wizard (first time)
   %(prog)s                          # Generate commit from staged files
+  %(prog)s -C ~/src/other-repo     # Operate on that git repo from any shell cwd
   %(prog)s --model gpt-4o           # Use GPT-4o model (instead of default)
   %(prog)s config set model gpt-4o  # Set default model
   %(prog)s config set token-budget 500000  # Set token budget
+  %(prog)s config set commit-prompt "Use imperative style and include scope"
   %(prog)s config get               # Show current configuration
   %(prog)s config edit              # Edit config file in default editor
 
@@ -217,7 +222,7 @@ Note: Run 'autocommit init' for first-time setup.
     )
     config_set_parser.add_argument(
         "key",
-        choices=["model", "token-budget"],
+        choices=["model", "token-budget", "commit-prompt"],
         help="Configuration key to set"
     )
     config_set_parser.add_argument(
@@ -271,6 +276,16 @@ Note: Run 'autocommit init' for first-time setup.
         default="origin",
         help="Git remote to push to (default: %(default)s)"
     )
+
+    parser.add_argument(
+        "-C",
+        "--repo",
+        type=Path,
+        default=None,
+        metavar="PATH",
+        help="Use PATH as the starting directory for finding the git repo (like git -C). "
+        "Useful when your shell cwd is not inside the repository.",
+    )
     
     parser.add_argument(
         "--set-default-model",
@@ -299,7 +314,8 @@ Note: Run 'autocommit init' for first-time setup.
 
     # Handle init subcommand
     if args.command == "init":
-        from ai_auto_commit.setup import setup_wizard
+        from ai_auto_commit.setup_wizard import setup_wizard
+
         setup_wizard()
         return
     # Handle config subcommand
@@ -319,6 +335,10 @@ Note: Run 'autocommit init' for first-time setup.
             if model_config:
                 print(f"  → {model_config.display_name} ({model_config.description})")
             print(f"Token budget: {token_budget:,} tokens")
+            effective_prompt = ensure_commit_prompt_template(PROMPT_HEADER)
+            print("Commit prompt template:")
+            print(effective_prompt)
+            config = get_config()
             if config:
                 print("\nAll settings:")
                 for key, value in sorted(config.items()):
@@ -349,6 +369,14 @@ Note: Run 'autocommit init' for first-time setup.
                 except ValueError:
                     print("❌ Error: Token budget must be a valid integer")
                     sys.exit(1)
+
+            elif args.key == "commit-prompt":
+                prompt_template = args.value.strip()
+                if not prompt_template:
+                    print("❌ Error: Commit prompt must be a non-empty string")
+                    sys.exit(1)
+                set_commit_prompt_template(prompt_template)
+                print("✅ Commit prompt template saved.")
             return
         
         elif args.config_action == "edit":
@@ -426,6 +454,7 @@ Note: Run 'autocommit init' for first-time setup.
             model=args.model,
             temperature=args.temperature,
             remote=args.remote,
+            repo=args.repo,
             auto_recover_push=args.auto_recover,
             non_interactive=args.non_interactive,
         )

@@ -195,6 +195,9 @@ autocommit config set model gpt-4o
 # Set token budget (default: 250,000)
 autocommit config set token-budget 500000
 
+# Set custom commit prompt template
+autocommit config set commit-prompt "Generate concise conventional commits focused on impact."
+
 # View current configuration
 autocommit config get
 
@@ -253,6 +256,16 @@ autocommit config set token-budget 100000
 
 **Default**: 250,000 tokens
 
+#### Set Custom Commit Prompt
+
+Use this to personalize the prompt template sent to the AI when generating commit messages:
+
+```bash
+autocommit config set commit-prompt "Generate concise conventional commits, emphasize why, and keep bullets under 12 words."
+```
+
+This stores your custom template under `commit_prompt_template` in the config file.
+
 ### 3. Edit Configuration File Directly
 
 Open the config file in your default editor:
@@ -272,7 +285,8 @@ The config file format is JSON:
 ```json
 {
   "default_model": "gpt-4o",
-  "token_budget": 250000
+  "token_budget": 250000,
+  "commit_prompt_template": "Generate concise conventional commits and focus on impact."
 }
 ```
 

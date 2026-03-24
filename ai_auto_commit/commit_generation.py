@@ -9,13 +9,13 @@ from typing import List
 try:
     from .api_client import check_network_connectivity, generate_fallback_commit_message
     from .llm_client import get_token_usage, invoke_llm
-    from .prompts import PROMPT_HEADER
+    from .prompts import get_commit_prompt_header
     from .token_budget import get_max_token_budget, refund_tokens, try_reserve_tokens
     from .token_utils import token_len
 except ImportError:
     from api_client import check_network_connectivity, generate_fallback_commit_message
     from llm_client import get_token_usage, invoke_llm
-    from prompts import PROMPT_HEADER
+    from prompts import get_commit_prompt_header
     from token_budget import get_max_token_budget, refund_tokens, try_reserve_tokens
     from token_utils import token_len
 
@@ -142,8 +142,9 @@ def sampled_commit_message(
     
     # Stage 2: final commit message
     bullets_text = "\n".join(sorted(bullets))
+    prompt_header = get_commit_prompt_header()
     prompt = (
-        PROMPT_HEADER
+        prompt_header
         + "\nBelow are per-file bullets (sampled from largest files). "
         "Write the final Conventional Commit message:\n\n"
         + bullets_text
@@ -199,8 +200,9 @@ def hierarchical_commit_message(
 
         # Stage 2: final commit message
         bullets_text = "\n".join(sorted(bullets))  # crude grouping heuristic
+        prompt_header = get_commit_prompt_header()
         prompt = (
-            PROMPT_HEADER
+            prompt_header
             + "\nBelow are per-file bullets. Write the final Conventional "
             "Commit message:\n\n"
             + bullets_text
@@ -245,7 +247,7 @@ def hierarchical_commit_message(
                 full_diff[:MAX_CHARS] + "\n\n[... Diff truncated due to length ...]"
             )
         
-        full_prompt = PROMPT_HEADER + "\n" + full_diff
+        full_prompt = get_commit_prompt_header() + "\n" + full_diff
         return generate_commit_message_with_retry(full_prompt, model, temperature)
 
 
@@ -370,6 +372,6 @@ def smart_hierarchical_commit_message(
                 full_diff[:MAX_CHARS] + "\n\n[... Diff truncated due to length ...]"
             )
         
-        full_prompt = PROMPT_HEADER + "\n" + full_diff
+        full_prompt = get_commit_prompt_header() + "\n" + full_diff
         return generate_commit_message_with_retry(full_prompt, model, temperature)
 

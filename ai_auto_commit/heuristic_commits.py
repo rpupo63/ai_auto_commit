@@ -5,12 +5,12 @@ from __future__ import annotations
 # Import modules - handle both package and direct script execution
 try:
     from .llm_client import get_token_usage, invoke_llm
-    from .prompts import PROMPT_HEADER
+    from .prompts import get_commit_prompt_header
     from .token_budget import refund_tokens, try_reserve_tokens
     from .token_utils import token_len
 except ImportError:
     from llm_client import get_token_usage, invoke_llm
-    from prompts import PROMPT_HEADER
+    from prompts import get_commit_prompt_header
     from token_budget import refund_tokens, try_reserve_tokens
     from token_utils import token_len
 
@@ -127,8 +127,9 @@ def compose_commit_from_bullets(
 ) -> str:
     """Compose the final Conventional Commit from bullets with a single small call."""
     bullets_text = "\n".join(bullets[:200])  # hard cap
+    prompt_header = get_commit_prompt_header()
     prompt = (
-        PROMPT_HEADER
+        prompt_header
         + "\nBelow are summarized staged changes (no raw diffs). "
         "Write the final Conventional Commit message:\n\n"
         + bullets_text

@@ -25,10 +25,16 @@ class GitPushError(Exception):
         self.recovery_action = recovery_action
 
 
-def get_target_directory() -> Path:
-    """Get the git repository root directory from the current working directory."""
-    # Start from the current working directory
-    current_dir = Path.cwd().resolve()
+def get_target_directory(start: Optional[Path] = None) -> Path:
+    """Get the git repository root by walking up from *start* or the current working directory."""
+    if start is not None:
+        current_dir = Path(start).expanduser().resolve()
+        if not current_dir.exists():
+            raise RuntimeError(f"Path does not exist: {current_dir}")
+        if not current_dir.is_dir():
+            raise RuntimeError(f"Not a directory: {current_dir}")
+    else:
+        current_dir = Path.cwd().resolve()
     
     # Walk up the directory tree to find the .git directory
     for path in [current_dir] + list(current_dir.parents):
