@@ -47,9 +47,9 @@ def prompt_for_files(target_dir: Path) -> str:
 def prompt_for_model() -> str:
     """Prompt user for model selection using model_picker's interactive selector."""
     try:
-        from ai_auto_commit.models import get_default_model, set_preference
+        from ai_auto_commit.models import get_default_model
     except ImportError:
-        from models import get_default_model, set_preference
+        from models import get_default_model
 
     from ai_model_picker import select_provider, select_model
 
@@ -65,7 +65,6 @@ def prompt_for_model() -> str:
 
     model = select_model(provider, "Select Model")
     if model:
-        set_preference(provider, model)
         return model
     return get_default_model()
 

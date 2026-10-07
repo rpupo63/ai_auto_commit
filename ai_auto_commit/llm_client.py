@@ -1,13 +1,13 @@
 """LangChain-based LLM client for multiple AI providers.
 
-Uses ai_model_picker for configuration, live catalogs, and preference
-instructions, with LangChain as the execution backend.
+Uses ai_model_picker for configuration and model resolution,
+with LangChain as the execution backend.
 """
 
 from __future__ import annotations
 
 import os
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Optional
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -17,59 +17,33 @@ from ai_model_picker import (
     get_model_api_id,
     get_api_key_with_fallback,
     get_provider_env_var,
-    load_preference,
 )
 
 # App name for config lookup
 APP_NAME = "ai_auto_commit"
 
-# OpenAI-compatible endpoints (aligned with ai_model_picker.client)
-_OPENAI_COMPAT_ENDPOINTS: Dict[str, Tuple[str, Optional[str], Optional[str]]] = {
-    # provider -> (default_base_url, base_url_env, api_key_env_override)
-    "deepseek": ("https://api.deepseek.com", "DEEPSEEK_BASE_URL", "DEEPSEEK_API_KEY"),
-    "xai": ("https://api.x.ai/v1", "XAI_BASE_URL", "XAI_API_KEY"),
-    "meta": ("https://api.together.xyz/v1", "META_BASE_URL", "META_AI_API_KEY"),
-    "moonshot": ("https://api.moonshot.ai/v1", "MOONSHOT_BASE_URL", "MOONSHOT_API_KEY"),
-    "zai": ("https://api.z.ai/api/paas/v4/", "ZAI_BASE_URL", "ZAI_API_KEY"),
-    "minimax": ("https://api.minimax.io/v1", "MINIMAX_BASE_URL", "MINIMAX_API_KEY"),
-    "perplexity": ("https://api.perplexity.ai", "PERPLEXITY_BASE_URL", "PERPLEXITY_API_KEY"),
-    "nvidia": ("https://integrate.api.nvidia.com/v1", "NVIDIA_BASE_URL", "NVIDIA_API_KEY"),
-    "bytedance": ("https://ark.cn-beijing.volces.com/api/v3", "BYTEDANCE_BASE_URL", "ARK_API_KEY"),
-    "tencent": ("https://api.hunyuan.cloud.tencent.com/v1", "TENCENT_BASE_URL", "HUNYUAN_API_KEY"),
-    "xiaomi": ("https://api.xiaomimimo.com/v1", "XIAOMI_BASE_URL", "XIAOMI_API_KEY"),
-    "amazon": (
-        "https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1",
-        "AMAZON_BASE_URL",
-        "AMAZON_API_KEY",
-    ),
-    "stepfun": ("https://api.stepfun.com/v1", "STEPFUN_BASE_URL", "STEPFUN_API_KEY"),
-    "alibaba": (
-        "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "ALIBABA_BASE_URL",
-        "DASHSCOPE_API_KEY",
-    ),
-}
+# All supported providers
+SUPPORTED_PROVIDERS = [
+    "openai", "anthropic", "google", "mistral", "cohere",
+    "deepseek", "xai", "meta", "alibaba",
+]
 
 # Store initialized clients by provider
-_providers_initialized: dict[str, bool] = {}
+_providers_initialized: dict[str, bool] = {p: False for p in SUPPORTED_PROVIDERS}
 
 # Store model instances by model name
 _model_instances: dict[str, BaseChatModel] = {}
 
 
-def get_supported_providers() -> list[str]:
-    """Dynamic provider list from the live model_picker catalog."""
-    return [k for k in get_available_providers() if k != "none"]
-
-
 def initialize_provider(provider: str, api_key: str) -> None:
     """Initialize a provider with its API key."""
-    if _providers_initialized.get(provider, False):
-        return
+    global _providers_initialized
 
+    if _providers_initialized.get(provider, False):
+        return  # Already initialized
+
+    # Set environment variable for the provider
     env_var = get_provider_env_var(provider)
-    if not env_var and provider in _OPENAI_COMPAT_ENDPOINTS:
-        env_var = _OPENAI_COMPAT_ENDPOINTS[provider][2]
     if env_var:
         os.environ[env_var] = api_key
         _providers_initialized[provider] = True
@@ -81,50 +55,48 @@ def _infer_provider_from_model_name(model_name: str) -> Optional[str]:
     """Infer the provider from a model name for custom/unknown models."""
     model_lower = model_name.lower()
 
-    if model_lower.startswith(("gpt-", "o1", "o3", "o4", "text-", "davinci", "curie", "babbage", "ada")):
+    # OpenAI models
+    if model_lower.startswith(("gpt-", "o1", "o3", "text-", "davinci", "curie", "babbage", "ada")):
         return "openai"
+
+    # Anthropic models
     if model_lower.startswith("claude"):
         return "anthropic"
+
+    # Google models
     if model_lower.startswith("gemini"):
         return "google"
+
+    # Mistral models
     if model_lower.startswith(("mistral", "devstral", "codestral", "pixtral", "ministral")):
         return "mistral"
-    if model_lower.startswith(("command", "embed", "rerank", "north")):
+
+    # Cohere models
+    if model_lower.startswith(("command", "embed", "rerank")):
         return "cohere"
+
+    # DeepSeek models
     if model_lower.startswith("deepseek"):
         return "deepseek"
+
+    # xAI / Grok models
     if model_lower.startswith("grok"):
         return "xai"
-    if model_lower.startswith(("llama", "meta", "muse")):
+
+    # Meta / Llama models
+    if model_lower.startswith(("llama", "meta")):
         return "meta"
+
+    # Alibaba / Qwen models
     if model_lower.startswith("qwen"):
         return "alibaba"
-    if model_lower.startswith("kimi"):
-        return "moonshot"
-    if model_lower.startswith("glm"):
-        return "zai"
-    if model_lower.startswith("minimax"):
-        return "minimax"
-    if model_lower.startswith("sonar"):
-        return "perplexity"
-    if model_lower.startswith("nemotron"):
-        return "nvidia"
-    if model_lower.startswith("seed"):
-        return "bytedance"
-    if model_lower.startswith(("hy3", "hunyuan")):
-        return "tencent"
-    if model_lower.startswith("mimo"):
-        return "xiaomi"
-    if model_lower.startswith("nova"):
-        return "amazon"
-    if model_lower.startswith("step"):
-        return "stepfun"
 
     return None
 
 
 def _get_provider_for_model(model_name: str) -> str:
-    """Get the provider for a model, checking catalog then inferring."""
+    """Get the provider for a model, checking config then inferring."""
+    # First check if it's a known model in provider_models.json
     providers = get_available_providers()
     for provider_key, provider_data in providers.items():
         if provider_key == "none":
@@ -132,20 +104,25 @@ def _get_provider_for_model(model_name: str) -> str:
         models = provider_data.get("models", [])
         model_api_ids = provider_data.get("model_api_ids", {})
 
+        # Check display names
         if model_name in models:
             return provider_key
+
+        # Check API IDs
         if model_name in model_api_ids.values():
             return provider_key
 
+    # Try to infer from model name
     inferred = _infer_provider_from_model_name(model_name)
     if inferred:
         return inferred
 
-    known = ", ".join(get_supported_providers())
     raise ValueError(
         f"Unknown model: {model_name}. "
-        f"Could not determine provider from the live catalog. "
-        f"Known providers: {known}."
+        f"Could not determine provider. Use a model name starting with "
+        f"'gpt-' (OpenAI), 'claude' (Anthropic), 'gemini' (Google), "
+        f"'mistral' (Mistral), 'command' (Cohere), 'deepseek' (DeepSeek), "
+        f"'grok' (xAI), 'llama' (Meta), or 'qwen' (Alibaba)."
     )
 
 
@@ -215,68 +192,95 @@ def _create_cohere_llm(model_name: str, temperature: float) -> BaseChatModel:
     )
 
 
-def _create_openai_compat_llm(
-    provider: str,
-    model_name: str,
-    temperature: float,
-) -> BaseChatModel:
-    """Create an OpenAI-compatible ChatOpenAI client for a provider."""
+def _create_deepseek_llm(model_name: str, temperature: float) -> BaseChatModel:
+    """Create DeepSeek LLM instance (OpenAI-compatible)."""
     from langchain_openai import ChatOpenAI
-
-    default_base, base_env, key_env = _OPENAI_COMPAT_ENDPOINTS[provider]
-    base_url = os.getenv(base_env, default_base) if base_env else default_base
-    api_key = os.environ.get(key_env) if key_env else None
-    if not api_key:
-        env_var = get_provider_env_var(provider)
-        if env_var:
-            api_key = os.environ.get(env_var)
-
     return ChatOpenAI(
         model=model_name,
         temperature=temperature,
         timeout=60,
-        base_url=base_url,
-        api_key=api_key,
+        base_url="https://api.deepseek.com",
+        api_key=os.environ.get("DEEPSEEK_API_KEY"),
     )
 
 
-def _make_compat_factory(provider: str) -> Callable[[str, float], BaseChatModel]:
-    def factory(model_name: str, temperature: float) -> BaseChatModel:
-        return _create_openai_compat_llm(provider, model_name, temperature)
+def _create_xai_llm(model_name: str, temperature: float) -> BaseChatModel:
+    """Create xAI (Grok) LLM instance (OpenAI-compatible)."""
+    from langchain_openai import ChatOpenAI
+    return ChatOpenAI(
+        model=model_name,
+        temperature=temperature,
+        timeout=60,
+        base_url="https://api.x.ai/v1",
+        api_key=os.environ.get("XAI_API_KEY"),
+    )
 
-    factory.__name__ = f"_create_{provider}_llm"
-    return factory
+
+def _create_meta_llm(model_name: str, temperature: float) -> BaseChatModel:
+    """Create Meta (Llama) LLM instance via Together.ai (OpenAI-compatible)."""
+    from langchain_openai import ChatOpenAI
+    return ChatOpenAI(
+        model=model_name,
+        temperature=temperature,
+        timeout=60,
+        base_url="https://api.together.xyz/v1",
+        api_key=os.environ.get("META_AI_API_KEY"),
+    )
 
 
-# Provider to LLM factory mapping (native SDKs + OpenAI-compatible)
-_LLM_FACTORIES: Dict[str, Callable[[str, float], BaseChatModel]] = {
+def _create_alibaba_llm(model_name: str, temperature: float) -> BaseChatModel:
+    """Create Alibaba (Qwen) LLM instance via DashScope."""
+    # DashScope doesn't have official LangChain integration,
+    # use OpenAI-compatible endpoint
+    from langchain_openai import ChatOpenAI
+    return ChatOpenAI(
+        model=model_name,
+        temperature=temperature,
+        timeout=60,
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        api_key=os.environ.get("DASHSCOPE_API_KEY"),
+    )
+
+
+# Provider to LLM factory mapping
+_LLM_FACTORIES = {
     "openai": _create_openai_llm,
     "anthropic": _create_anthropic_llm,
     "google": _create_google_llm,
     "mistral": _create_mistral_llm,
     "cohere": _create_cohere_llm,
+    "deepseek": _create_deepseek_llm,
+    "xai": _create_xai_llm,
+    "meta": _create_meta_llm,
+    "alibaba": _create_alibaba_llm,
 }
-for _compat_provider in _OPENAI_COMPAT_ENDPOINTS:
-    _LLM_FACTORIES[_compat_provider] = _make_compat_factory(_compat_provider)
 
 
 def get_llm(model_name: str, temperature: float = 0.2) -> BaseChatModel:
     """Get a LangChain LLM instance for the specified model."""
+    global _model_instances
+
+    # Check cache
     cache_key = f"{model_name}_{temperature}"
     if cache_key in _model_instances:
         return _model_instances[cache_key]
 
+    # Get provider for this model
     provider = _get_provider_for_model(model_name)
+
+    # Ensure provider is initialized
     _ensure_provider_initialized(provider)
+
+    # Resolve model name to API ID
     api_model = get_model_api_id(model_name, provider, APP_NAME)
 
+    # Create model instance
     if provider not in _LLM_FACTORIES:
-        raise ValueError(
-            f"Unsupported provider: {provider}. "
-            f"Supported: {', '.join(sorted(_LLM_FACTORIES))}."
-        )
+        raise ValueError(f"Unsupported provider: {provider}")
 
     llm = _LLM_FACTORIES[provider](api_model, temperature)
+
+    # Cache the instance
     _model_instances[cache_key] = llm
     return llm
 
@@ -291,31 +295,43 @@ def invoke_llm(
     """
     Invoke an LLM with a prompt and return the response text.
 
-    When ``system_prompt`` is omitted, uses instructions from the app's
-    ModelPreference (``preference.json``) if set.
+    Parameters
+    ----------
+    model_name : str
+        Name of the model to use.
+    prompt : str
+        The prompt to send to the model.
+    temperature : float
+        Sampling temperature.
+    max_tokens : int, optional
+        Maximum tokens in the response.
+    system_prompt : str, optional
+        Optional system message to set context.
+
+    Returns
+    -------
+    str
+        The model's response text.
     """
     llm = get_llm(model_name, temperature)
 
+    # Set max_tokens if provided (not all models support this)
     if max_tokens:
         try:
             if hasattr(llm, "max_tokens"):
                 llm.max_tokens = max_tokens
         except Exception:
-            pass
-
-    effective_system = system_prompt
-    if effective_system is None:
-        pref = load_preference(APP_NAME)
-        if pref.instructions:
-            effective_system = pref.instructions
+            pass  # Some models don't support max_tokens parameter
 
     try:
         messages = []
-        if effective_system:
-            messages.append(SystemMessage(content=effective_system))
+        if system_prompt:
+            messages.append(SystemMessage(content=system_prompt))
         messages.append(HumanMessage(content=prompt))
 
         response = llm.invoke(messages)
+
+        # Handle different response content formats
         return _extract_response_content(response)
 
     except Exception as e:

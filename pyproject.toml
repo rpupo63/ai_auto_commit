@@ -41,7 +41,7 @@ classifiers = [
     "Environment :: Console",
 ]
 dependencies = [
-    "ai-model-picker>=0.2.0",
+    "ai-model-picker>=0.1.0",
     "InquirerPy>=0.3.0",
     "pydantic>=2.0.0",
     "pydantic-core>=2.0.0",
